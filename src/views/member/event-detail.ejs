@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('../partials/head') %>
+  <div class="shell">
+    <%- include('../partials/sidebar') %>
+    <main class="content">
+      <%
+        var title = String(event.title || '').toLowerCase();
+        var tone = 'blue';
+        var icon = 'star';
+        if (title.indexOf('golf') !== -1) { tone = 'green'; icon = 'golf'; }
+        else if (title.indexOf('birth') !== -1 || title.indexOf('cake') !== -1) { tone = 'purple'; icon = 'cake'; }
+        else if (title.indexOf('kitty') !== -1 || title.indexOf('cat') !== -1 || title.indexOf('pet') !== -1) { tone = 'orange'; icon = 'paw'; }
+        else if (title.indexOf('qr') !== -1 || title.indexOf('scan') !== -1) { tone = 'blue'; icon = 'qr'; }
+        else if (title.indexOf('retire') !== -1 || title.indexOf('cocktail') !== -1) { tone = 'red'; icon = 'drink'; }
+        else {
+          var palettes = ['green', 'purple', 'orange', 'blue', 'red'];
+          var icons = ['golf', 'cake', 'paw', 'qr', 'drink'];
+          var idx = Math.abs(Number(event.id) || 0) % 5;
+          tone = palettes[idx];
+          icon = icons[idx];
+        }
+        var priceLabel = Number(event.price_paise) === 0
+          ? 'Free'
+          : '₹' + (Number(event.price_paise) / 100).toFixed(2);
+        var registered = event.myRegistration && event.myRegistration.status !== 'CANCELLED';
+        var status = registered ? event.myRegistration.status : '';
+        var myAddons = registered ? Number(event.myRegistration.addon_count || 0) : 0;
+        var maxAddons = Math.max(Number(event.seatsLeft) - 1, 0);
+      %>
+
+      <% if (error) { %>
+        <div class="alert"><%= error %></div>
+      <% } %>
+
+      <article class="event-detail-card">
+        <header class="event-detail-head">
+          <div class="event-detail-title-row">
+            <span class="event-icon event-icon-lg event-icon-<%= tone %>" aria-hidden="true">
+              <% if (icon === 'golf') { %>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M7 20V5l10 5-10 2"/><path d="M6 20h4"/></svg>
+              <% } else if (icon === 'cake') { %>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 11h8v8H8z"/><path d="M7 19h10"/><path d="M12 11V8"/><circle cx="12" cy="6.5" r="1"/></svg>
+              <% } else if (icon === 'paw') { %>
+                <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="8" cy="9" r="1.6"/><circle cx="16" cy="9" r="1.6"/><circle cx="6.5" cy="13" r="1.4"/><circle cx="17.5" cy="13" r="1.4"/><ellipse cx="12" cy="16.2" rx="3.2" ry="2.4"/></svg>
+              <% } else if (icon === 'qr') { %>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 6h5v5H6zM13 6h5v5h-5zM6 13h5v5H6z"/><path d="M14 14h2v2h-2zM18 14v4h-4"/></svg>
+              <% } else if (icon === 'drink') { %>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M7 6h10l-5 8v4h3"/><path d="M9 18h3"/></svg>
+              <% } else { %>
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l2.2 6.6H21l-5.4 4 2.1 6.4L12 16.6 6.3 20l2.1-6.4L3 9.6h6.8z"/></svg>
+              <% } %>
+            </span>
+            <div>
+              <h1><%= event.title %></h1>
+              <div class="event-detail-sub">
+                <span>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4z"/><path d="M5 19c1.4-3.2 4-5 7-5s5.6 1.8 7 5"/></svg>
+                  <%= event.venue || 'Venue TBA' %>
+                </span>
+                <span>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4M16 3v4M4 10h16"/></svg>
+                  <%= formatDate(event.starts_at) %>
+                </span>
+              </div>
+            </div>
+          </div>
+          <div class="event-detail-aside">
+            <% if (event.status === 'COMPLETED') { %>
+              <span class="status-pill completed">COMPLETED</span>
+            <% } %>
+            <% if (registered) { %>
+              <span class="registered-pill">You are registered</span>
+              <span class="event-status event-status-<%= String(status).toLowerCase() %>"><%= status %></span>
+              <% if (myAddons > 0) { %>
+                <span class="muted"><%= myAddons %> add-on<%= myAddons === 1 ? '' : 's' %></span>
+              <% } %>
+            <% } %>
+          </div>
+        </header>
+
+        <section class="event-detail-body">
+          <h2>Event details</h2>
+          <p class="muted"><%= event.description || 'No description.' %></p>
+
+          <div class="event-stat-row">
+            <div class="event-stat">
+              <span class="event-stat-label event-stat-blue">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="3"/><path d="M5 19c1.2-3 3.8-4.5 7-4.5S17.8 16 19 19"/></svg>
+                Capacity
+              </span>
+              <strong><%= event.capacity %></strong>
+            </div>
+            <div class="event-stat">
+              <span class="event-stat-label event-stat-green">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="3"/><path d="M5 19c1.2-3 3.8-4.5 7-4.5S17.8 16 19 19"/><path d="M16 8.5l1.2 1.2L20 7"/></svg>
+                Taken
+              </span>
+              <strong><%= event.seatsTaken %></strong>
+            </div>
+            <div class="event-stat">
+              <span class="event-stat-label event-stat-sky">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg>
+                Seats left
+              </span>
+              <strong><%= event.seatsLeft %></strong>
+            </div>
+            <div class="event-stat">
+              <span class="event-stat-label event-stat-purple">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 8h14v10H5z"/><path d="M5 12h14"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>
+                Price
+              </span>
+              <strong><%= priceLabel %></strong>
+            </div>
+          </div>
+        </section>
+
+        <div class="event-window">
+          <span class="event-window-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg>
+          </span>
+          <div>
+            <strong>Check-in window</strong>
+            <div class="muted"><%= formatDate(event.doors_open_at) %> → <%= formatDate(event.doors_close_at) %></div>
+          </div>
+        </div>
+
+        <% if (registered) { %>
+          <% if (status === 'PENDING_PAYMENT') { %>
+            <a class="event-action-row event-action-primary" href="/member/registrations/<%= event.myRegistration.id %>/pay">
+              <span>Pay now</span>
+              <span aria-hidden="true">→</span>
+            </a>
+          <% } else if (status === 'PAID' || status === 'CHECKED_IN') { %>
+            <a class="event-action-row event-action-primary" href="/member/registrations/<%= event.myRegistration.id %>/pass">
+              <span>View pass</span>
+              <span aria-hidden="true">→</span>
+            </a>
+          <% } %>
+          <a class="event-action-row event-action-secondary" href="/member/registrations">
+            <span>My registrations</span>
+            <span aria-hidden="true">→</span>
+          </a>
+        <% } else if (event.status === 'COMPLETED') { %>
+          <button class="event-action-row event-action-secondary" type="button" disabled>Event ended</button>
+        <% } else if (event.seatsLeft <= 0) { %>
+          <button class="event-action-row event-action-secondary" type="button" disabled>Event full</button>
+        <% } else { %>
+          <form method="POST" action="/member/events/<%= event.id %>/register" class="addon-register">
+            <label class="addon-field">
+              Add-ons (optional)
+              <div class="addon-stepper" data-stepper>
+                <button type="button" class="stepper-btn" data-step="-1" aria-label="Decrease add-ons">−</button>
+                <input
+                  id="addonCount"
+                  name="addonCount"
+                  type="number"
+                  min="0"
+                  max="<%= maxAddons %>"
+                  value="0"
+                  step="1"
+                  readonly
+                />
+                <button type="button" class="stepper-btn" data-step="1" aria-label="Increase add-ons">+</button>
+              </div>
+            </label>
+            <p class="muted addon-hint">
+              Extra people with you. You already count as 1.
+              Max <%= maxAddons %> with the seats left.
+              <% if (Number(event.price_paise) > 0) { %>
+                Paid events charge the entry fee × (you + add-ons).
+                <span id="addonTotal"></span>
+              <% } %>
+            </p>
+            <button class="event-action-row event-action-primary" type="submit">
+              <span><%= Number(event.price_paise) === 0 ? 'Register (free)' : 'Register' %></span>
+              <span aria-hidden="true">→</span>
+            </button>
+          </form>
+          <% if (Number(event.price_paise) > 0) { %>
+            <p class="muted event-pay-hint">After registering, pay from My registrations (or an admin can mark paid).</p>
+          <% } %>
+        <% } %>
+
+        <a class="btn btn-ghost event-back" href="/member/events">Back to events</a>
+      </article>
+    </main>
+  </div>
+  <% if (!registered && event.seatsLeft > 0 && Number(event.price_paise) > 0) { %>
+    <script>
+      (function () {
+        var input = document.getElementById('addonCount');
+        var totalEl = document.getElementById('addonTotal');
+        var unit = <%= Number(event.price_paise) %>;
+        function refresh() {
+          var addons = Math.max(0, parseInt(input.value || '0', 10) || 0);
+          var rupees = ((unit * (1 + addons)) / 100).toFixed(2);
+          totalEl.textContent = ' Total: ₹' + rupees + '.';
+        }
+        input.addEventListener('input', refresh);
+        input.addEventListener('change', refresh);
+        document.querySelectorAll('[data-stepper] .stepper-btn').forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            var min = parseInt(input.min || '0', 10);
+            var max = parseInt(input.max || '0', 10);
+            var next = (parseInt(input.value || '0', 10) || 0) + parseInt(btn.getAttribute('data-step'), 10);
+            if (next < min) next = min;
+            if (next > max) next = max;
+            input.value = next;
+            refresh();
+          });
+        });
+        refresh();
+      })();
+    </script>
+  <% } else if (!registered && event.seatsLeft > 0) { %>
+    <script>
+      (function () {
+        var input = document.getElementById('addonCount');
+        if (!input) return;
+        document.querySelectorAll('[data-stepper] .stepper-btn').forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            var min = parseInt(input.min || '0', 10);
+            var max = parseInt(input.max || '0', 10);
+            var next = (parseInt(input.value || '0', 10) || 0) + parseInt(btn.getAttribute('data-step'), 10);
+            if (next < min) next = min;
+            if (next > max) next = max;
+            input.value = next;
+          });
+        });
+      })();
+    </script>
+  <% } %>
+</body>
+</html>

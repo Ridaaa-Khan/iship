@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('../partials/head') %>
+  <div class="shell">
+    <%- include('../partials/sidebar') %>
+    <main class="content">
+      <div class="dash-header">
+        <div>
+          <h1><%= dashboard.greeting %></h1>
+          <p class="muted"><%= dashboard.subtitle %></p>
+        </div>
+        <div class="ops-badge">
+          <span>
+            <strong>Scanner system operational</strong>
+            Ready to scan member QR codes
+          </span>
+        </div>
+      </div>
+
+      <section class="scanner-hero">
+        <div class="scan-cta">
+          <div class="scan-icon">▦</div>
+          <h2>Scan member QR</h2>
+          <p class="muted">Verify membership and record entry</p>
+          <a class="btn btn-primary" href="/scanner/scan">Scan QR code</a>
+        </div>
+        <div>
+          <div class="dash-panel-head">
+            <div>
+              <h2>Today's statistics</h2>
+            </div>
+            <div class="muted"><%= dashboard.todayLabel %></div>
+          </div>
+          <div class="mini-stats">
+            <article class="stat-card stat-blue">
+              <div class="stat-icon">👤</div>
+              <div class="stat-label">Scans today</div>
+              <div class="stat-value"><%= dashboard.stats.scansToday %></div>
+            </article>
+            <article class="stat-card stat-green">
+              <div class="stat-icon">✓</div>
+              <div class="stat-label">Successful</div>
+              <div class="stat-value"><%= dashboard.stats.successful %></div>
+            </article>
+            <article class="stat-card stat-red">
+              <div class="stat-icon">✕</div>
+              <div class="stat-label">Invalid / Expired</div>
+              <div class="stat-value"><%= dashboard.stats.denied %></div>
+            </article>
+            <article class="stat-card stat-amber">
+              <div class="stat-icon">◎</div>
+              <div class="stat-label">Current inside</div>
+              <div class="stat-value"><%= dashboard.stats.currentInside %></div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="dash-panel">
+        <div class="dash-panel-head">
+          <div>
+            <h2>Recent scans</h2>
+            <p class="muted">Latest member scans at the gate.</p>
+          </div>
+          <a class="muted" href="/scanner/entries">View all</a>
+        </div>
+        <% if (!dashboard.recent.length) { %>
+          <p class="muted">No scans yet.</p>
+        <% } else { %>
+          <div class="table-wrap" style="margin-bottom:0;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Member</th>
+                  <th>Time</th>
+                  <th>Result</th>
+                  <th>Details</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% dashboard.recent.forEach((row) => { %>
+                  <tr>
+                    <td><%= row.full_name || '—' %></td>
+                    <td><%= formatDate(row.created_at) %></td>
+                    <td>
+                      <span class="<%= row.result === 'ALLOWED' ? 'result-valid' : 'result-bad' %>">
+                        <%= row.result === 'ALLOWED' ? '✓' : '✕' %> <%= row.resultLabel %>
+                      </span>
+                    </td>
+                    <td><%= row.device_label || row.event_title || '—' %></td>
+                  </tr>
+                <% }) %>
+              </tbody>
+            </table>
+          </div>
+        <% } %>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('../partials/head') %>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <div class="shell">
+    <%- include('../partials/sidebar') %>
+    <main class="content">
+      <div class="dash-header">
+        <div>
+          <h1><%= dashboard.greeting %></h1>
+          <p class="muted"><%= dashboard.subtitle %></p>
+        </div>
+        <div class="dash-date"><%= dashboard.todayLabel %></div>
+      </div>
+
+      <section class="stat-grid">
+        <article class="stat-card stat-card-row stat-purple">
+          <div class="stat-icon">👤</div>
+          <div class="stat-copy">
+            <div class="stat-label">Members</div>
+            <div class="stat-value"><%= dashboard.stats.members %></div>
+            <div class="stat-sub">Total registered members</div>
+          </div>
+        </article>
+        <article class="stat-card stat-card-row stat-green">
+          <div class="stat-icon">✓</div>
+          <div class="stat-copy">
+            <div class="stat-label">Active</div>
+            <div class="stat-value"><%= dashboard.stats.active %></div>
+            <div class="stat-sub">Currently active members</div>
+          </div>
+        </article>
+        <article class="stat-card stat-card-row stat-blue">
+          <div class="stat-icon">→</div>
+          <div class="stat-copy">
+            <div class="stat-label">Today's visits</div>
+            <div class="stat-value"><%= dashboard.stats.todayVisits %></div>
+            <div class="stat-sub">Entries recorded today</div>
+          </div>
+        </article>
+      </section>
+
+      <section class="dash-panel dash-panel-chart">
+        <div class="dash-panel-head">
+          <div>
+            <h2>Member activity</h2>
+            <p class="muted">Visits over the last days</p>
+          </div>
+          <div class="range-toggle">
+            <button type="button" id="range7" class="active">7 days</button>
+            <button type="button" id="range30">30 days</button>
+          </div>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="activityChart"></canvas>
+        </div>
+      </section>
+
+      <section class="dash-panel">
+        <div class="dash-panel-head">
+          <div>
+            <h2>Recent activity</h2>
+            <p class="muted">Latest member entries and exits</p>
+          </div>
+          <a class="muted" href="/admin/entries/today">View all</a>
+        </div>
+        <% if (!dashboard.recent.length) { %>
+          <p class="muted">No activity yet.</p>
+        <% } else { %>
+          <div class="table-wrap" style="margin-bottom:0;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Time</th>
+                  <th>Member</th>
+                  <th>Type</th>
+                  <th>Scanner</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% dashboard.recent.forEach((row) => { %>
+                  <tr>
+                    <td><%= formatDate(row.created_at) %></td>
+                    <td><%= row.full_name || '—' %></td>
+                    <td>
+                      <span class="status-pill <%= row.result === 'ALLOWED' ? 'allowed' : 'denied' %>">
+                        <%= row.result === 'ALLOWED' ? 'Entry' : 'Denied' %>
+                      </span>
+                    </td>
+                    <td><%= row.scanner_email || row.device_label || '—' %></td>
+                  </tr>
+                <% }) %>
+              </tbody>
+            </table>
+          </div>
+        <% } %>
+      </section>
+    </main>
+  </div>
+  <script>
+    const series = {
+      7: <%- JSON.stringify(dashboard.charts.days7) %>,
+      30: <%- JSON.stringify(dashboard.charts.days30) %>
+    };
+    const ctx = document.getElementById('activityChart');
+    const chart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: series[7].labels,
+        datasets: [{
+          data: series[7].values,
+          borderColor: '#3b82f6',
+          backgroundColor: 'rgba(59, 130, 246, 0.12)',
+          borderWidth: 2,
+          pointRadius: 3,
+          pointBackgroundColor: '#3b82f6',
+          tension: 0.35,
+          fill: false
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: {
+            ticks: { color: '#9aa8c7' },
+            grid: { color: 'rgba(36, 48, 73, 0.6)' }
+          },
+          y: {
+            beginAtZero: true,
+            ticks: { color: '#9aa8c7', precision: 0 },
+            grid: { color: 'rgba(36, 48, 73, 0.6)' }
+          }
+        }
+      }
+    });
+
+    function setRange(days) {
+      chart.data.labels = series[days].labels;
+      chart.data.datasets[0].data = series[days].values;
+      chart.update();
+      document.getElementById('range7').classList.toggle('active', days === 7);
+      document.getElementById('range30').classList.toggle('active', days === 30);
+    }
+    document.getElementById('range7').addEventListener('click', () => setRange(7));
+    document.getElementById('range30').addEventListener('click', () => setRange(30));
+  </script>
+</body>
+</html>

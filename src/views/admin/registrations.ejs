@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('../partials/head') %>
+  <div class="shell">
+    <%- include('../partials/sidebar') %>
+    <main class="content" data-filter-root>
+      <div class="page-header">
+        <div>
+          <h1>Registrations</h1>
+        </div>
+        <div class="page-tools">
+          <input type="search" data-filter-search placeholder="Search member or event" />
+          <select data-filter-status>
+            <option value="">All statuses</option>
+            <option value="PENDING_PAYMENT">Pending payment</option>
+            <option value="PAID">Paid</option>
+            <option value="CHECKED_IN">Checked in</option>
+            <option value="CANCELLED">Cancelled</option>
+          </select>
+        </div>
+      </div>
+
+      <% if (!registrations.length) { %>
+        <p class="muted">No registrations yet.</p>
+      <% } else { %>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Member</th>
+                <th>Event</th>
+                <th>Add-ons</th>
+                <th>Amount</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% registrations.forEach((row) => { %>
+                <tr data-filter-row data-search="<%= (row.full_name + ' ' + row.email + ' ' + row.event_title).toLowerCase() %>" data-status="<%= row.status %>">
+                  <td><%= row.full_name %><br /><span class="muted"><%= row.email %></span></td>
+                  <td><%= row.event_title %></td>
+                  <td><%= Number(row.addon_count || 0) %></td>
+                  <td>
+                    <%= Number(row.amount_paise) === 0 ? 'Free' : '₹' + (Number(row.amount_paise) / 100).toFixed(2) %>
+                  </td>
+                  <td>
+                    <span class="status-pill <%= String(row.status).toLowerCase() %>"><%= row.status %></span>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      <% } %>
+    </main>
+  </div>
+</body>
+</html>

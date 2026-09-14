@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('../partials/head') %>
+  <div class="shell">
+    <%- include('../partials/sidebar') %>
+    <main class="content" data-filter-root>
+      <div class="page-header">
+        <div>
+          <h1>My registrations</h1>
+          <p class="muted">Pay for pending tickets or wait for a free/paid confirmation</p>
+        </div>
+        <div class="page-tools">
+          <input type="search" data-filter-search placeholder="Search event" />
+          <select data-filter-status>
+            <option value="">All statuses</option>
+            <option value="PENDING_PAYMENT">Pending payment</option>
+            <option value="PAID">Paid</option>
+            <option value="CHECKED_IN">Checked in</option>
+            <option value="CANCELLED">Cancelled</option>
+          </select>
+        </div>
+      </div>
+
+      <% if (typeof error !== 'undefined' && error) { %>
+        <div class="alert"><%= error %></div>
+      <% } %>
+      <% if (typeof notice !== 'undefined' && notice) { %>
+        <div class="alert alert-success"><%= notice %></div>
+      <% } %>
+
+      <% if (!registrations.length) { %>
+        <p class="muted">No registrations yet. <a href="/member/events">Browse events</a></p>
+      <% } else { %>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Event</th>
+                <th>Starts</th>
+                <th>Add-ons</th>
+                <th>Amount</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% registrations.forEach((row) => { %>
+                <tr data-filter-row data-search="<%= String(row.title).toLowerCase() %>" data-status="<%= row.status %>">
+                  <td><%= row.title %></td>
+                  <td><%= formatDate(row.starts_at) %></td>
+                  <td><%= Number(row.addon_count || 0) %></td>
+                  <td>
+                    <%= Number(row.amount_paise) === 0 ? 'Free' : '₹' + (Number(row.amount_paise) / 100).toFixed(2) %>
+                  </td>
+                  <td>
+                    <span class="status-pill <%= String(row.status).toLowerCase() %>"><%= row.status %></span>
+                  </td>
+                  <td>
+                    <% var canUpdateAddons = row.can_change_addons || row.status === 'PENDING_PAYMENT' || row.status === 'PAID'; %>
+                    <% var hasActions = row.status === 'PENDING_PAYMENT' || row.status === 'PAID' || row.status === 'CHECKED_IN' || row.can_cancel || canUpdateAddons; %>
+                    <% if (!hasActions) { %>
+                      <span class="muted">—</span>
+                    <% } else { %>
+                      <div class="row-menu">
+                        <button type="button" class="row-menu-btn" aria-label="Actions">⋮</button>
+                        <div class="row-menu-list">
+                          <% if (row.status === 'PENDING_PAYMENT') { %>
+                            <a href="/member/registrations/<%= row.id %>/pay">
+                              <svg class="row-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M3 10h18"/></svg>
+                              Pay now
+                            </a>
+                          <% } else if (row.status === 'PAID' || row.status === 'CHECKED_IN') { %>
+                            <a href="/member/registrations/<%= row.id %>/pass">
+                              <svg class="row-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M7 4h10v16H7z"/><path d="M10 8h4M10 12h4"/></svg>
+                              View pass
+                            </a>
+                          <% } %>
+                          <% if (canUpdateAddons) { %>
+                            <button
+                              type="button"
+                              data-open-addons
+                              data-action="/member/registrations/<%= row.id %>/addons"
+                              data-value="<%= Number(row.addon_count || 0) %>"
+                              data-max="<%= Number(row.addon_count || 0) + Number(row.seats_left || 0) %>"
+                            >
+                              <svg class="row-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20l4-1 11-11-3-3L5 16z"/><path d="M14 6l3 3"/></svg>
+                              Update add-ons
+                            </button>
+                          <% } %>
+                          <% if (row.can_cancel) { %>
+                            <button
+                              type="button"
+                              class="is-danger"
+                              data-open-cancel
+                              data-action="/member/registrations/<%= row.id %>/cancel"
+                            >
+                              <svg class="row-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 7h14"/><path d="M9 7V5h6v2"/><path d="M8 7l1 12h6l1-12"/></svg>
+                              Cancel registration
+                            </button>
+                          <% } %>
+                        </div>
+                      </div>
+                    <% } %>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      <% } %>
+    </main>
+  </div>
+
+  <div class="ui-modal" id="cancelModal" hidden>
+    <div class="ui-modal-card">
+      <p>Press confirm to cancel your registration</p>
+      <form id="cancelForm" method="POST" action="">
+        <div class="ui-modal-actions">
+          <button class="btn btn-primary" type="submit">Confirm</button>
+          <button class="btn btn-ghost" type="button" data-close-modal>Back</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="ui-modal" id="addonModal" hidden>
+    <div class="ui-modal-card">
+      <h2>Update add-ons</h2>
+      <form id="addonForm" method="POST" action="">
+        <div class="addon-stepper" data-stepper>
+          <button type="button" class="stepper-btn" data-step="-1" aria-label="Decrease add-ons">−</button>
+          <input id="addonModalCount" name="addonCount" type="number" min="0" max="0" value="0" step="1" readonly />
+          <button type="button" class="stepper-btn" data-step="1" aria-label="Increase add-ons">+</button>
+        </div>
+        <p class="muted" id="addonModalHint"></p>
+        <div class="ui-modal-actions">
+          <button class="btn btn-ghost" type="button" data-close-modal>Cancel</button>
+          <button class="btn btn-primary" type="submit">Save changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      var cancelModal = document.getElementById('cancelModal');
+      var addonModal = document.getElementById('addonModal');
+      var cancelForm = document.getElementById('cancelForm');
+      var addonForm = document.getElementById('addonForm');
+      var addonInput = document.getElementById('addonModalCount');
+      var addonHint = document.getElementById('addonModalHint');
+
+      function closeMenus() {
+        document.querySelectorAll('.row-menu.is-open').forEach(function (menu) {
+          menu.classList.remove('is-open');
+        });
+      }
+
+      function openModal(modal) {
+        modal.hidden = false;
+        modal.classList.add('is-open');
+      }
+
+      function closeModals() {
+        [cancelModal, addonModal].forEach(function (modal) {
+          if (!modal) return;
+          modal.classList.remove('is-open');
+          modal.hidden = true;
+        });
+      }
+
+      document.querySelectorAll('.row-menu-btn').forEach(function (button) {
+        button.addEventListener('click', function (event) {
+          event.stopPropagation();
+          var menu = button.closest('.row-menu');
+          var list = menu.querySelector('.row-menu-list');
+          var open = menu.classList.contains('is-open');
+          closeMenus();
+          if (!open) {
+            var rect = button.getBoundingClientRect();
+            list.style.top = (rect.bottom + 6) + 'px';
+            list.style.left = 'auto';
+            list.style.right = Math.max(12, window.innerWidth - rect.right) + 'px';
+            menu.classList.add('is-open');
+          }
+        });
+      });
+
+      document.addEventListener('click', closeMenus);
+
+      document.querySelectorAll('[data-open-cancel]').forEach(function (button) {
+        button.addEventListener('click', function () {
+          closeMenus();
+          cancelForm.action = button.getAttribute('data-action');
+          openModal(cancelModal);
+        });
+      });
+
+      document.querySelectorAll('[data-open-addons]').forEach(function (button) {
+        button.addEventListener('click', function () {
+          closeMenus();
+          var max = parseInt(button.getAttribute('data-max') || '0', 10);
+          var value = parseInt(button.getAttribute('data-value') || '0', 10);
+          addonForm.action = button.getAttribute('data-action');
+          addonInput.max = max;
+          addonInput.value = value;
+          addonHint.textContent = max > 0 ? 'Max ' + max : 'No extra seats left';
+          openModal(addonModal);
+        });
+      });
+
+      document.querySelectorAll('[data-close-modal]').forEach(function (button) {
+        button.addEventListener('click', closeModals);
+      });
+
+      document.querySelectorAll('.ui-modal').forEach(function (modal) {
+        modal.addEventListener('click', function (event) {
+          if (event.target === modal) closeModals();
+        });
+      });
+
+      document.querySelectorAll('[data-stepper] .stepper-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var box = btn.closest('[data-stepper]');
+          var input = box.querySelector('input');
+          var min = parseInt(input.min || '0', 10);
+          var max = parseInt(input.max || '0', 10);
+          var next = (parseInt(input.value || '0', 10) || 0) + parseInt(btn.getAttribute('data-step'), 10);
+          if (next < min) next = min;
+          if (next > max) next = max;
+          input.value = next;
+          if (addonHint) addonHint.textContent = max > 0 ? 'Max ' + max : 'No extra seats left';
+        });
+      });
+    })();
+  </script>
+</body>
+</html>

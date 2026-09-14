@@ -1,0 +1,27 @@
+<aside class="sidebar">
+  <nav class="sidebar-nav">
+    <% if (currentUser && currentUser.role === 'ADMIN') { %>
+      <a class="nav-link" href="/admin">Dashboard</a>
+      <a class="nav-link" href="/admin/events">Events</a>
+      <a class="nav-link" href="/admin/members">Members</a>
+      <a class="nav-link" href="/admin/registrations">Registrations</a>
+      <a class="nav-link" href="/admin/entries/today">Today's entries</a>
+      <a class="nav-link" href="/admin/attendance">Attendance</a>
+      <a class="nav-link" href="/admin/scanners">Scanners</a>
+    <% } else if (currentUser && currentUser.role === 'SCANNER') { %>
+      <a class="nav-link" href="/scanner">Dashboard</a>
+      <a class="nav-link" href="/scanner/scan">Open scanner</a>
+      <a class="nav-link" href="/scanner/entries">Today's entries</a>
+    <% } else if (currentUser && currentUser.role === 'MEMBER') { %>
+      <a class="nav-link" href="/member">Dashboard</a>
+      <a class="nav-link" href="/member/events">Events</a>
+      <a class="nav-link" href="/member/registrations">My registrations</a>
+      <a class="nav-link" href="/member/profile">Profile</a>
+    <% } %>
+  </nav>
+  <% if (currentUser && (currentUser.role === 'ADMIN' || currentUser.role === 'SCANNER')) { %>
+    <form class="sidebar-footer" action="/auth/logout" method="POST">
+      <button type="submit" class="btn btn-danger btn-logout">Logout</button>
+    </form>
+  <% } %>
+</aside>

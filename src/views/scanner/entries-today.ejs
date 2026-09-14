@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('../partials/head') %>
+  <div class="shell">
+    <%- include('../partials/sidebar') %>
+    <main class="content">
+      <h1>Today's entries</h1>
+      <p class="muted">All scan attempts from today (allowed and denied).</p>
+
+      <% if (typeof error !== 'undefined' && error) { %>
+        <div class="alert"><%= error %></div>
+      <% } %>
+
+      <% if (!entries.length) { %>
+        <p class="muted">No scans yet today.</p>
+      <% } else { %>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Time</th>
+                <th>Event</th>
+                <th>Member</th>
+                <th>Reg status</th>
+                <th>Add-ons</th>
+                <th>Result</th>
+                <th>Reason</th>
+                <th>Scanner</th>
+                <th>Device</th>
+                <th>Edit</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% entries.forEach((row) => { %>
+                <tr>
+                  <td><%= formatDate(row.created_at) %></td>
+                  <td><%= row.event_title %></td>
+                  <td>
+                    <%= row.full_name || '—' %>
+                    <% if (row.member_email) { %><br /><span class="muted"><%= row.member_email %></span><% } %>
+                  </td>
+                  <td><%= row.registration_status || '—' %></td>
+                  <td><%= Number(row.addon_count || 0) > 0 ? row.addon_count : '—' %></td>
+                  <td><span class="role-badge"><%= row.result %></span></td>
+                  <td><%= row.denial_reason || '—' %></td>
+                  <td><%= row.scanner_email || '—' %></td>
+                  <td><%= row.device_label || '—' %></td>
+                  <td>
+                    <button type="button" class="btn btn-ghost btn-sm" data-edit-toggle>Edit</button>
+                    <form class="entry-edit" method="POST" action="/scanner/entries/<%= row.id %>">
+                      <label>
+                        Date / time
+                        <input type="datetime-local" name="createdAt" value="<%= toDatetimeLocal(row.created_at) %>" required />
+                      </label>
+                      <label>
+                        Status
+                        <select name="result">
+                          <option value="ALLOWED" <%= row.result === 'ALLOWED' ? 'selected' : '' %>>ALLOWED</option>
+                          <option value="DENIED" <%= row.result === 'DENIED' ? 'selected' : '' %>>DENIED</option>
+                        </select>
+                      </label>
+                      <label>
+                        Reason
+                        <input type="text" name="denialReason" value="<%= row.denial_reason || '' %>" maxlength="255" />
+                      </label>
+                      <button class="btn btn-primary btn-sm" type="submit">Save</button>
+                    </form>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      <% } %>
+    </main>
+  </div>
+  <script>
+    document.querySelectorAll('[data-edit-toggle]').forEach((button) => {
+      button.addEventListener('click', () => {
+        const form = button.nextElementSibling;
+        if (!form) return;
+        form.classList.toggle('is-open');
+        button.textContent = form.classList.contains('is-open') ? 'Close' : 'Edit';
+      });
+    });
+  </script>
+</body>
+</html>

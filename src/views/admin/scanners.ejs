@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('../partials/head') %>
+  <div class="shell">
+    <%- include('../partials/sidebar') %>
+    <main class="content" data-filter-root>
+      <div class="page-header">
+        <div>
+          <h1>Scanners</h1>
+          <p class="muted">Gate devices that check in event guests</p>
+        </div>
+        <div class="page-tools">
+          <input type="search" data-filter-search placeholder="Search name, gate, or email" />
+          <a class="btn btn-primary" href="/admin/scanners/new">Add a scanner</a>
+        </div>
+      </div>
+
+      <% if (error) { %>
+        <div class="alert"><%= error %></div>
+      <% } %>
+      <% if (notice) { %>
+        <div class="alert alert-success"><%= notice %></div>
+      <% } %>
+
+      <% if (!scanners.length) { %>
+        <p class="muted">No scanners yet. Add the first one.</p>
+      <% } else { %>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Scanner name</th>
+                <th>Email</th>
+                <th>Gate number</th>
+                <th>Last login</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% scanners.forEach((row) => { %>
+                <tr
+                  data-filter-row
+                  data-search="<%= String(row.scanner_name || '').toLowerCase() + ' ' + String(row.gate_number || '').toLowerCase() + ' ' + String(row.email || '').toLowerCase() %>"
+                >
+                  <td><%= row.scanner_name || '—' %></td>
+                  <td><%= row.email %></td>
+                  <td><%= row.gate_number || '—' %></td>
+                  <td><%= row.last_login_at ? formatDate(row.last_login_at) : '—' %></td>
+                  <td>
+                    <form method="POST" action="/admin/scanners/<%= row.id %>/remove" class="inline-form">
+                      <button class="btn btn-ghost btn-remove" type="submit">Remove scanner</button>
+                    </form>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      <% } %>
+    </main>
+  </div>
+</body>
+</html>

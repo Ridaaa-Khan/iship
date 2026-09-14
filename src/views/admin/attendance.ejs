@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('../partials/head') %>
+  <div class="shell">
+    <%- include('../partials/sidebar') %>
+    <main class="content" data-filter-root>
+      <div class="page-header">
+        <div>
+          <h1>Attendance</h1>
+          <p class="muted">Choose an event to see who registered and who checked in.</p>
+        </div>
+        <div class="page-tools">
+          <input type="search" data-filter-search placeholder="Search event" />
+          <select data-filter-status>
+            <option value="">All statuses</option>
+            <option value="DRAFT">Draft</option>
+            <option value="PUBLISHED">Published</option>
+            <option value="CANCELLED">Cancelled</option>
+            <option value="COMPLETED">Completed</option>
+          </select>
+        </div>
+      </div>
+
+      <% if (!events.length) { %>
+        <p class="muted">No events yet.</p>
+      <% } else { %>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>Starts</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% events.forEach((event) => { %>
+                <tr data-filter-row data-search="<%= String(event.title).toLowerCase() %>" data-status="<%= event.status %>">
+                  <td><%= event.title %></td>
+                  <td><%= formatDate(event.starts_at) %></td>
+                  <td>
+                    <span class="status-pill <%= String(event.status).toLowerCase() %>"><%= event.status %></span>
+                  </td>
+                  <td>
+                    <a class="btn btn-attendance" href="/admin/attendance/<%= event.id %>">View attendance</a>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      <% } %>
+    </main>
+  </div>
+</body>
+</html>

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('../partials/head') %>
+  <div class="shell">
+    <%- include('../partials/sidebar') %>
+    <main class="content" data-filter-root>
+      <div class="page-header">
+        <div>
+          <h1>Attendance — <%= event.title %></h1>
+          <p class="muted"><%= event.venue || 'Venue TBA' %> · <%= formatDate(event.starts_at) %></p>
+        </div>
+        <div class="page-tools">
+          <input type="search" data-filter-search placeholder="Search member" />
+          <select data-filter-status>
+            <option value="">All statuses</option>
+            <option value="PENDING_PAYMENT">Pending payment</option>
+            <option value="PAID">Paid</option>
+            <option value="CHECKED_IN">Checked in</option>
+            <option value="CANCELLED">Cancelled</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="page-actions">
+        <a class="btn btn-primary" href="/admin/attendance/<%= event.id %>/pdf">Download PDF</a>
+      </div>
+
+      <% if (!rows.length) { %>
+        <p class="muted">No registrations for this event.</p>
+      <% } else { %>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Add-ons</th>
+                <th>Entered</th>
+                <th>Reg status</th>
+                <th>QR status</th>
+                <th>Checked in at</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% rows.forEach((row) => { %>
+                <tr data-filter-row data-search="<%= (row.full_name + ' ' + row.email).toLowerCase() %>" data-status="<%= row.registration_status %>">
+                  <td><%= row.full_name %></td>
+                  <td><%= row.email %></td>
+                  <td><%= Number(row.addon_count || 0) > 0 ? row.addon_count : '—' %></td>
+                  <td><%= Number(row.entered_count || 0) %> / <%= 1 + Number(row.addon_count || 0) %></td>
+                  <td><span class="role-badge"><%= row.registration_status %></span></td>
+                  <td><%= row.qr_status || '—' %></td>
+                  <td><%= row.checked_in_at ? formatDate(row.checked_in_at) : '—' %></td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      <% } %>
+
+      <div class="page-actions">
+        <a class="btn btn-ghost" href="/admin/attendance">Back</a>
+      </div>
+    </main>
+  </div>
+</body>
+</html>

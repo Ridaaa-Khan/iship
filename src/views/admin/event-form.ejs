@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('../partials/head') %>
+  <div class="shell">
+    <%- include('../partials/sidebar') %>
+    <main class="content event-form-page">
+      <div class="event-form-wrap">
+        <h1><%= mode === 'create' ? 'Create event' : 'Edit event' %></h1>
+        <p class="muted">Door times control when QR check-in is allowed later.</p>
+
+        <% if (error) { %>
+          <div class="alert"><%= error %></div>
+        <% } %>
+
+        <form
+          method="POST"
+          action="<%= mode === 'create' ? '/admin/events' : '/admin/events/' + event.id %>"
+          class="stack form-panel"
+        >
+          <label>
+            Title
+            <input type="text" name="title" value="<%= event.title || '' %>" required />
+          </label>
+
+          <label>
+            Description
+            <textarea name="description" rows="4"><%= event.description || '' %></textarea>
+          </label>
+
+          <label>
+            Venue
+            <input type="text" name="venue" value="<%= event.venue || '' %>" autocomplete="off" />
+          </label>
+
+          <div class="datetime-group">
+            <div class="datetime-group-title">Event time</div>
+            <div class="datetime-grid">
+              <label>
+                Starts at
+                <input class="theme-datetime" type="datetime-local" name="startsAt" value="<%= event.startsAt || '' %>" required />
+              </label>
+              <label>
+                Ends at
+                <input class="theme-datetime" type="datetime-local" name="endsAt" value="<%= event.endsAt || '' %>" required />
+              </label>
+            </div>
+          </div>
+
+          <div class="datetime-group">
+            <div class="datetime-group-title">Door time</div>
+            <div class="datetime-grid">
+              <label>
+                Doors open
+                <input class="theme-datetime" type="datetime-local" name="doorsOpenAt" value="<%= event.doorsOpenAt || '' %>" required />
+              </label>
+              <label>
+                Doors close
+                <input class="theme-datetime" type="datetime-local" name="doorsCloseAt" value="<%= event.doorsCloseAt || '' %>" required />
+              </label>
+            </div>
+          </div>
+
+          <div class="form-grid">
+            <label>
+              Capacity
+              <input type="number" name="capacity" min="1" value="<%= event.capacity || 100 %>" required />
+            </label>
+            <label>
+              Price (₹) — use 0 for free
+              <input type="number" name="priceRupees" min="0" step="0.01" value="<%= event.priceRupees || '0.00' %>" required />
+            </label>
+          </div>
+
+          <label>
+            Status
+            <select name="status">
+              <% ['DRAFT', 'PUBLISHED', 'CANCELLED', 'COMPLETED'].forEach((s) => { %>
+                <option value="<%= s %>" <%= event.status === s ? 'selected' : '' %>><%= s %></option>
+              <% }) %>
+            </select>
+          </label>
+
+          <div class="form-actions">
+            <button class="btn btn-primary" type="submit">Save</button>
+            <a class="btn btn-ghost" href="/admin/events">Back</a>
+          </div>
+        </form>
+      </div>
+    </main>
+  </div>
+</body>
+</html>

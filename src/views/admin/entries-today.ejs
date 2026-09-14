@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('../partials/head') %>
+  <div class="shell">
+    <%- include('../partials/sidebar') %>
+    <main class="content" data-filter-root>
+      <div class="page-header">
+        <div>
+          <h1>Today's entries</h1>
+          <p class="muted">All scan attempts from today (allowed and denied).</p>
+        </div>
+        <div class="page-tools">
+          <input type="search" data-filter-search placeholder="Search member or event" />
+          <select data-filter-status>
+            <option value="">All statuses</option>
+            <option value="ALLOWED">ALLOWED</option>
+            <option value="DENIED">DENIED</option>
+          </select>
+        </div>
+      </div>
+
+      <% if (!entries.length) { %>
+        <p class="muted">No scans yet today.</p>
+      <% } else { %>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Time</th>
+                <th>Event</th>
+                <th>Member</th>
+                <th>Reg status</th>
+                <th>Add-ons</th>
+                <th>Result</th>
+                <th>Reason</th>
+                <th>Scanner</th>
+                <th>Device</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% entries.forEach((row) => { %>
+                <tr data-filter-row data-search="<%= ((row.full_name || '') + ' ' + (row.member_email || '') + ' ' + (row.event_title || '')).toLowerCase() %>" data-status="<%= row.result %>">
+                  <td><%= formatDate(row.created_at) %></td>
+                  <td><%= row.event_title %></td>
+                  <td>
+                    <%= row.full_name || '—' %>
+                    <% if (row.member_email) { %><br /><span class="muted"><%= row.member_email %></span><% } %>
+                  </td>
+                  <td><%= row.registration_status || '—' %></td>
+                  <td><%= Number(row.addon_count || 0) > 0 ? row.addon_count : '—' %></td>
+                  <td><span class="role-badge"><%= row.result %></span></td>
+                  <td><%= row.denial_reason || '—' %></td>
+                  <td><%= row.scanner_email || '—' %></td>
+                  <td><%= row.device_label || '—' %></td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      <% } %>
+    </main>
+  </div>
+</body>
+</html>

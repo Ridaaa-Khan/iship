@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('../partials/head') %>
+  <main class="auth-card">
+    <h1>Join the club</h1>
+    <p class="muted">Creates a MEMBER account only</p>
+
+    <% if (error) { %>
+      <div class="alert"><%= error %></div>
+    <% } %>
+
+    <form method="POST" action="/auth/register" class="stack">
+      <label>
+        Full name
+        <input
+          type="text"
+          name="fullName"
+          value="<%= form.fullName || '' %>"
+          minlength="3"
+          maxlength="150"
+          pattern="[A-Za-z]+( [A-Za-z]+)*"
+          title="Use letters only, at least 3 characters"
+          data-validate-name
+          required
+        />
+      </label>
+      <label>
+        Email
+        <input type="email" name="email" value="<%= form.email || '' %>" required />
+      </label>
+      <label>
+        Password
+        <input type="password" name="password" minlength="8" required />
+      </label>
+      <label>
+        Phone (optional)
+        <input
+          type="tel"
+          name="phone"
+          value="<%= form.phone || '' %>"
+          inputmode="numeric"
+          maxlength="10"
+          pattern="[0-9]{10}"
+          title="Enter exactly 10 digits"
+          data-validate-phone
+        />
+      </label>
+      <button type="submit" class="btn btn-primary">Register</button>
+    </form>
+
+    <p class="muted">Already have an account? <a href="/auth/login">Login</a></p>
+  </main>
+</body>
+</html>

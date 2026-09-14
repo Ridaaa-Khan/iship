@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('../partials/head') %>
+  <div class="shell">
+    <%- include('../partials/sidebar') %>
+    <main class="content">
+      <div class="page-header">
+        <div>
+          <h1>Upcoming events</h1>
+          <p class="muted">Published and completed club events</p>
+        </div>
+      </div>
+
+      <% if (!events.length) { %>
+        <p class="muted">No published events right now.</p>
+      <% } else { %>
+        <div class="event-card-grid">
+          <% events.forEach((event) => { %>
+            <%
+              var title = String(event.title || '').toLowerCase();
+              var tone = 'blue';
+              var icon = 'star';
+              if (title.indexOf('golf') !== -1) { tone = 'green'; icon = 'golf'; }
+              else if (title.indexOf('birth') !== -1 || title.indexOf('cake') !== -1) { tone = 'purple'; icon = 'cake'; }
+              else if (title.indexOf('kitty') !== -1 || title.indexOf('cat') !== -1 || title.indexOf('pet') !== -1) { tone = 'orange'; icon = 'paw'; }
+              else if (title.indexOf('qr') !== -1 || title.indexOf('scan') !== -1) { tone = 'blue'; icon = 'qr'; }
+              else if (title.indexOf('retire') !== -1 || title.indexOf('cocktail') !== -1) { tone = 'red'; icon = 'drink'; }
+              else {
+                var palettes = ['green', 'purple', 'orange', 'blue', 'red'];
+                var icons = ['golf', 'cake', 'paw', 'qr', 'drink'];
+                var idx = Math.abs(Number(event.id) || 0) % 5;
+                tone = palettes[idx];
+                icon = icons[idx];
+              }
+              var priceLabel = Number(event.price_paise) === 0
+                ? 'Free'
+                : '₹' + (Number(event.price_paise) / 100).toFixed(2);
+              var status = event.myRegistration && event.myRegistration.status !== 'CANCELLED'
+                ? event.myRegistration.status
+                : '';
+              var addons = status ? Number(event.myRegistration.addon_count || 0) : 0;
+              var desc = String(event.description || '').trim();
+              if (desc.length > 90) desc = desc.slice(0, 87) + '...';
+              var badgeStatus = event.status === 'COMPLETED'
+                ? 'COMPLETED'
+                : (status || '');
+            %>
+            <a class="event-card event-card-<%= tone %>" href="/member/events/<%= event.id %>">
+              <div class="event-card-main">
+                <span class="event-icon event-icon-<%= tone %>" aria-hidden="true">
+                  <% if (icon === 'golf') { %>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M7 20V5l10 5-10 2"/><path d="M6 20h4"/></svg>
+                  <% } else if (icon === 'cake') { %>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 11h8v8H8z"/><path d="M7 19h10"/><path d="M12 11V8"/><circle cx="12" cy="6.5" r="1"/></svg>
+                  <% } else if (icon === 'paw') { %>
+                    <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="8" cy="9" r="1.6"/><circle cx="16" cy="9" r="1.6"/><circle cx="6.5" cy="13" r="1.4"/><circle cx="17.5" cy="13" r="1.4"/><ellipse cx="12" cy="16.2" rx="3.2" ry="2.4"/></svg>
+                  <% } else if (icon === 'qr') { %>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 6h5v5H6zM13 6h5v5h-5zM6 13h5v5H6z"/><path d="M14 14h2v2h-2zM18 14v4h-4"/></svg>
+                  <% } else if (icon === 'drink') { %>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M7 6h10l-5 8v4h3"/><path d="M9 18h3"/></svg>
+                  <% } else { %>
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l2.2 6.6H21l-5.4 4 2.1 6.4L12 16.6 6.3 20l2.1-6.4L3 9.6h6.8z"/></svg>
+                  <% } %>
+                </span>
+                <div class="event-card-copy">
+                  <h3><%= event.title %></h3>
+                  <% if (desc) { %>
+                    <p class="event-card-desc"><%= desc %></p>
+                  <% } %>
+                  <div class="event-meta">
+                    <span>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4M16 3v4M4 10h16"/></svg>
+                      <%= formatDate(event.starts_at) %>
+                    </span>
+                    <span>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="3"/><path d="M5 19c1.2-3 3.8-4.5 7-4.5S17.8 16 19 19"/></svg>
+                      <%= event.seatsLeft %> seats left
+                    </span>
+                    <span>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 8h14v10H5z"/><path d="M5 12h14"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>
+                      <%= priceLabel %>
+                    </span>
+                    <% if (addons > 0) { %>
+                      <span>+<%= addons %> add-on<%= addons === 1 ? '' : 's' %></span>
+                    <% } %>
+                  </div>
+                </div>
+              </div>
+              <div class="event-card-foot">
+                <% if (badgeStatus) { %>
+                  <span class="status-pill <%= String(badgeStatus).toLowerCase() %>"><%= badgeStatus %></span>
+                <% } %>
+                <span class="event-go" aria-hidden="true">›</span>
+              </div>
+            </a>
+          <% }) %>
+        </div>
+      <% } %>
+    </main>
+  </div>
+</body>
+</html>

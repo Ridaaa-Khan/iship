@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('../partials/head') %>
+  <div class="shell">
+    <%- include('../partials/sidebar') %>
+    <main class="content" data-filter-root>
+      <div class="page-header">
+        <div>
+          <h1>Members</h1>
+          <p class="muted">Everyone registered as a club member</p>
+        </div>
+      </div>
+
+      <% if (error) { %>
+        <div class="alert"><%= error %></div>
+      <% } %>
+      <% if (notice) { %>
+        <div class="alert alert-success"><%= notice %></div>
+      <% } %>
+
+      <% if (!members.length) { %>
+        <p class="muted">No members yet.</p>
+      <% } else { %>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Status</th>
+                <th>Joined</th>
+                <th>Last login</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% members.forEach((row) => { %>
+                <tr>
+                  <td><%= row.full_name %></td>
+                  <td><%= row.email %></td>
+                  <td><%= row.phone || '—' %></td>
+                  <td>
+                    <span class="status-pill <%= String(row.status).toLowerCase() %>"><%= row.status %></span>
+                  </td>
+                  <td><%= formatDate(row.created_at) %></td>
+                  <td><%= row.last_login_at ? formatDate(row.last_login_at) : '—' %></td>
+                  <td>
+                    <form method="POST" action="/admin/members/<%= row.id %>/remove" class="inline-form">
+                      <button class="btn btn-ghost btn-remove" type="submit">Remove member</button>
+                    </form>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      <% } %>
+    </main>
+  </div>
+</body>
+</html>

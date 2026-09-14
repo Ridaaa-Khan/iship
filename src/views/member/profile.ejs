@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('../partials/head') %>
+  <div class="shell">
+    <%- include('../partials/sidebar') %>
+    <main class="content event-form-page">
+      <div class="event-form-wrap">
+      <div class="profile-title">
+        <h1>Profile</h1>
+        <button type="button" class="icon-btn" id="editProfile" title="Edit profile" aria-label="Edit profile">✎</button>
+      </div>
+      <p class="muted">Your membership details. Use the pencil to make changes.</p>
+
+      <% if (error) { %>
+        <div class="alert"><%= error %></div>
+      <% } %>
+
+      <form method="POST" action="/member/profile" class="stack form-panel" id="profileForm">
+        <label>
+          Full name
+          <input
+            type="text"
+            name="fullName"
+            id="fullName"
+            value="<%= profile.full_name || '' %>"
+            minlength="3"
+            maxlength="150"
+            pattern="[A-Za-z]+( [A-Za-z]+)*"
+            title="Use letters only, at least 3 characters"
+            data-validate-name
+            required
+            readonly
+          />
+        </label>
+
+        <label>
+          Email
+          <input type="email" name="email" id="email" value="<%= profile.email || '' %>" maxlength="255" required readonly />
+        </label>
+
+        <div class="form-grid">
+          <label>
+            Phone
+            <input
+              type="tel"
+              name="phone"
+              id="phone"
+              value="<%= profile.phone || '' %>"
+              inputmode="numeric"
+              maxlength="10"
+              pattern="[0-9]{10}"
+              title="Enter exactly 10 digits"
+              data-validate-phone
+              readonly
+            />
+          </label>
+          <label>
+            Membership status
+            <input type="text" value="<%= profile.status || '—' %>" disabled />
+          </label>
+        </div>
+
+        <label>
+          Member since
+          <input type="text" value="<%= profile.created_at ? formatDate(profile.created_at) : '—' %>" disabled />
+        </label>
+
+        <div class="form-actions" id="saveWrap" hidden>
+          <button class="btn btn-primary" type="submit" id="saveBtn" disabled>Save changes</button>
+        </div>
+      </form>
+
+      <form action="/auth/logout" method="POST" class="profile-logout">
+        <button type="submit" class="btn btn-danger">Logout</button>
+      </form>
+      </div>
+    </main>
+  </div>
+  <script>
+    const form = document.getElementById('profileForm');
+    const editBtn = document.getElementById('editProfile');
+    const saveWrap = document.getElementById('saveWrap');
+    const saveBtn = document.getElementById('saveBtn');
+    const fields = ['fullName', 'email', 'phone'].map((id) => document.getElementById(id));
+    const original = fields.map((field) => field.value);
+
+    function isDirty() {
+      return fields.some((field, index) => field.value !== original[index]);
+    }
+
+    function refreshSave() {
+      const dirty = isDirty();
+      saveWrap.hidden = !dirty;
+      saveBtn.disabled = !dirty || !form.checkValidity();
+    }
+
+    editBtn.addEventListener('click', () => {
+      fields.forEach((field) => { field.readOnly = false; });
+      fields[0].focus();
+      refreshSave();
+    });
+
+    form.addEventListener('input', refreshSave);
+  </script>
+</body>
+</html>

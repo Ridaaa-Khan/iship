@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('../partials/head') %>
+  <div class="shell">
+    <%- include('../partials/sidebar') %>
+    <main class="content">
+      <h1>Event pass</h1>
+
+      <% if (error) { %>
+        <div class="alert"><%= error %></div>
+        <div class="page-actions">
+          <a class="btn btn-ghost" href="/member/registrations">Back</a>
+        </div>
+      <% } else if (pass) { %>
+        <% var passStatus = pass.used ? 'USED' : (pass.expired ? 'EXPIRED' : (pass.status || 'ACTIVE')); %>
+        <div class="pass-stage">
+          <article class="uiverse-pass">
+            <div class="uiverse-pass-inner">
+              <p class="uiverse-pass-kicker">iShip event pass</p>
+              <h2><%= pass.eventTitle %></h2>
+              <div class="uiverse-pass-qr">
+                <img src="<%= pass.qrDataUrl %>" alt="Entry QR code" width="180" height="180" />
+              </div>
+              <dl class="uiverse-pass-meta">
+                <div>
+                  <dt>Status</dt>
+                  <dd>
+                    <span class="status-pill <%= String(passStatus).toLowerCase() %>"><%= passStatus %></span>
+                  </dd>
+                </div>
+                <div>
+                  <dt>Valid until</dt>
+                  <dd><%= formatDate(pass.expiresAt) %></dd>
+                </div>
+                <div>
+                  <dt>Add-ons</dt>
+                  <dd><%= Number(pass.addonCount || 0) %></dd>
+                </div>
+              </dl>
+              <p class="muted uiverse-pass-note">Show this QR at the gate. Do not share this pass publicly.</p>
+              <div class="pass-actions">
+                <a class="btn btn-primary" href="/member/registrations/<%= pass.registrationId %>/pass.pdf">
+                  Download PDF
+                </a>
+                <a class="btn btn-ghost" href="/member/registrations">Back</a>
+              </div>
+            </div>
+          </article>
+        </div>
+      <% } %>
+    </main>
+  </div>
+</body>
+</html>

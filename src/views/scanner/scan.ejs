@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('../partials/head') %>
+  <div class="shell">
+    <%- include('../partials/sidebar') %>
+    <main class="content">
+      <div class="scan-page-head">
+        <a class="btn btn-ghost event-back" href="/scanner">Back</a>
+        <div>
+          <h1>Scanner</h1>
+          <p class="muted">Point the camera at a pass QR, or paste the token below.</p>
+        </div>
+      </div>
+
+      <div class="scan-layout">
+        <section class="scan-controls">
+          <label for="deviceLabel">Device label (optional)</label>
+          <input id="deviceLabel" type="text" value="Gate A" />
+
+          <label for="peopleCount">People entering now</label>
+          <input id="peopleCount" type="number" min="1" step="1" value="1" />
+          <p class="muted scan-hint">Cannot exceed the remaining people on that pass.</p>
+
+          <label for="token">Or paste QR token</label>
+          <textarea id="token" rows="3" placeholder="ISHIP.publicId.secret"></textarea>
+
+          <button class="btn btn-primary scan-check-btn" type="button" id="btnCheckIn">
+            Check in (paste)
+          </button>
+
+          <p class="muted scan-hint">You can scan a QR code with the camera or paste the token manually.</p>
+
+          <div id="result" class="alert" style="display:none;"></div>
+        </section>
+
+        <section class="scan-camera">
+          <div class="scan-preview">
+            <span class="camera-badge" id="cameraBadge">Camera off</span>
+            <div id="reader"></div>
+          </div>
+          <div class="scan-camera-actions">
+            <button class="btn btn-primary" type="button" id="btnStartCam">Start camera</button>
+            <button class="btn btn-ghost" type="button" id="btnStopCam">Stop camera</button>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <script src="/vendor/html5-qrcode/html5-qrcode.min.js"></script>
+  <script>
+    const resultEl = document.getElementById('result');
+    const tokenEl = document.getElementById('token');
+    const cameraBadge = document.getElementById('cameraBadge');
+
+    let lastToken = '';
+    let lastAt = 0;
+    let busy = false;
+
+    function deviceLabel() {
+      return document.getElementById('deviceLabel').value.trim() || 'Gate A';
+    }
+
+    function peopleCount() {
+      const n = parseInt(document.getElementById('peopleCount').value || '1', 10);
+      return Number.isFinite(n) && n > 0 ? n : 1;
+    }
+
+    function showResult(text) {
+      resultEl.style.display = 'block';
+      resultEl.textContent = text;
+    }
+
+    function setCameraOn(on) {
+      cameraBadge.textContent = on ? 'Camera on' : 'Camera off';
+      cameraBadge.classList.toggle('is-on', on);
+    }
+
+    async function submitToken(token) {
+      const cleaned = (token || '').trim();
+      if (!cleaned) {
+        showResult('No token to check in.');
+        return;
+      }
+
+      const now = Date.now();
+      if (cleaned === lastToken && now - lastAt < 4000) {
+        return;
+      }
+      lastToken = cleaned;
+      lastAt = now;
+
+      if (busy) return;
+      busy = true;
+      showResult('Checking...');
+
+      try {
+        const res = await fetch('/scanner/check-in', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            token: cleaned,
+            deviceLabel: deviceLabel(),
+            peopleCount: peopleCount(),
+          }),
+        });
+        const data = await res.json();
+
+        if (data.allowed) {
+          const party = data.enteredCount && data.partySize
+            ? ' · ' + data.enteredCount + ' of ' + data.partySize + ' entered'
+            : '';
+          showResult(
+            'ALLOWED — ' + (data.memberName || '') + ' · ' + (data.eventTitle || '') + party
+          );
+        } else {
+          showResult(
+            'DENIED — ' + (data.message || data.reason || 'Entry denied')
+          );
+        }
+      } catch (err) {
+        showResult('Request failed. Is the server running?');
+      } finally {
+        busy = false;
+      }
+    }
+
+    document.getElementById('btnCheckIn').addEventListener('click', () => {
+      submitToken(tokenEl.value);
+    });
+
+    const html5QrCode = new Html5Qrcode('reader');
+    let camRunning = false;
+
+    document.getElementById('btnStartCam').addEventListener('click', async () => {
+      if (camRunning) return;
+      try {
+        await html5QrCode.start(
+          { facingMode: 'environment' },
+          { fps: 8, qrbox: { width: 240, height: 240 } },
+          (decodedText) => {
+            submitToken(decodedText);
+          },
+          () => {}
+        );
+        camRunning = true;
+        setCameraOn(true);
+        showResult('Camera on — show a pass QR.');
+      } catch (err) {
+        setCameraOn(false);
+        showResult('Could not start camera. Allow permission, or use paste.');
+      }
+    });
+
+    document.getElementById('btnStopCam').addEventListener('click', async () => {
+      if (!camRunning) return;
+      try {
+        await html5QrCode.stop();
+        camRunning = false;
+        setCameraOn(false);
+        showResult('Camera stopped.');
+      } catch (err) {
+        showResult('Could not stop camera cleanly.');
+      }
+    });
+  </script>
+</body>
+</html>

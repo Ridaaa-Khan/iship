@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('../partials/head') %>
+  <div class="shell">
+    <%- include('../partials/sidebar') %>
+    <main class="content event-form-page">
+      <div class="event-form-wrap">
+        <h1>Add a scanner</h1>
+        <p class="muted">This account can open the scanner app and check people in.</p>
+
+        <% if (error) { %>
+          <div class="alert"><%= error %></div>
+        <% } %>
+
+        <form method="POST" action="/admin/scanners" class="stack form-panel">
+          <label>
+            Email
+            <input type="email" name="email" value="<%= form.email || '' %>" required maxlength="255" autocomplete="off" />
+          </label>
+          <label>
+            Password
+            <input type="password" name="password" required minlength="3" maxlength="72" autocomplete="new-password" />
+          </label>
+          <label>
+            Scanner name
+            <input type="text" name="scannerName" value="<%= form.scannerName || '' %>" required minlength="2" maxlength="150" />
+          </label>
+          <label>
+            Gate number (optional)
+            <input type="text" name="gateNumber" value="<%= form.gateNumber || '' %>" maxlength="50" />
+          </label>
+          <div class="form-actions">
+            <button class="btn btn-primary" type="submit">Save scanner</button>
+            <a class="btn btn-ghost" href="/admin/scanners">Back</a>
+          </div>
+        </form>
+      </div>
+    </main>
+  </div>
+</body>
+</html>

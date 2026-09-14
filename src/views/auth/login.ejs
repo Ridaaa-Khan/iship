@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('../partials/head') %>
+  <main class="auth-card">
+    <h1>iShip</h1>
+    <p class="muted">Sign in to continue</p>
+
+    <% if (error) { %>
+      <div class="alert"><%= error %></div>
+    <% } %>
+
+    <form method="POST" action="/auth/login" class="stack">
+      <label>
+        Email
+        <input type="email" name="email" value="<%= email || '' %>" required />
+      </label>
+      <label>
+        Password
+        <input type="password" name="password" required />
+      </label>
+      <button type="submit" class="btn btn-primary">Login</button>
+    </form>
+
+    <p class="muted">New member? <a href="/auth/register">Register</a></p>
+  </main>
+</body>
+</html>

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('../partials/head') %>
+  <div class="shell">
+    <%- include('../partials/sidebar') %>
+    <main class="content">
+      <div class="page-header">
+        <div>
+          <h1>Events</h1>
+          <p class="muted">Create and publish club events</p>
+        </div>
+        <a class="btn btn-primary" href="/admin/events/new">Create event</a>
+      </div>
+
+      <% if (!events.length) { %>
+        <p class="muted">No events yet. Create your first one.</p>
+      <% } else { %>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>Starts</th>
+                <th>Ends at</th>
+                <th>Capacity</th>
+                <th>Price</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% events.forEach((event) => { %>
+                <tr>
+                  <td><%= event.title %></td>
+                  <td><%= formatDate(event.starts_at) %></td>
+                  <td><%= formatDate(event.ends_at) %></td>
+                  <td><%= event.capacity %></td>
+                  <td>₹<%= (event.price_paise / 100).toFixed(2) %></td>
+                  <td>
+                    <span class="status-pill <%= String(event.status).toLowerCase() %>"><%= event.status %></span>
+                  </td>
+                  <td class="actions">
+                    <a class="btn btn-ghost" href="/admin/events/<%= event.id %>/edit">Edit</a>
+                    <% if (event.status === 'DRAFT') { %>
+                      <form method="POST" action="/admin/events/<%= event.id %>/publish" class="inline-form">
+                        <button class="btn btn-primary" type="submit">Publish</button>
+                      </form>
+                    <% } %>
+                    <% if (event.status !== 'CANCELLED' && event.status !== 'COMPLETED') { %>
+                      <form method="POST" action="/admin/events/<%= event.id %>/cancel" class="inline-form">
+                        <button class="btn btn-ghost" type="submit">Cancel</button>
+                      </form>
+                    <% } %>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      <% } %>
+    </main>
+  </div>
+</body>
+</html>
