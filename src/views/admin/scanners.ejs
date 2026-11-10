@@ -48,7 +48,13 @@
                   <td><%= row.gate_number || '—' %></td>
                   <td><%= row.last_login_at ? formatDate(row.last_login_at) : '—' %></td>
                   <td>
-                    <form method="POST" action="/admin/scanners/<%= row.id %>/remove" class="inline-form">
+                    <form
+                      method="POST"
+                      action="/admin/scanners/<%= row.id %>/remove"
+                      class="inline-form"
+                      data-confirm="Remove this scanner account? They will no longer be able to check people in."
+                      data-confirm-title="Remove scanner"
+                    >
                       <button class="btn btn-ghost btn-remove" type="submit">Remove scanner</button>
                     </form>
                   </td>

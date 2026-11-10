@@ -1,0 +1,90 @@
+<%
+  var cover = eventCoverUrl(event.cover_image);
+  var parts = eventDateParts(event.starts_at);
+  var registered = event.myRegistration && event.myRegistration.status !== 'CANCELLED';
+  var mineStatus = registered ? event.myRegistration.status : '';
+  var seatsLeft = Number(event.seatsLeft != null ? event.seatsLeft : event.capacity);
+  var capacity = Number(event.capacity || 0);
+  var fillingFast = event.status === 'PUBLISHED' && capacity > 0 && seatsLeft > 0 && seatsLeft <= Math.max(1, Math.ceil(capacity * 0.25));
+  var badge = 'open';
+  var badgeLabel = 'Registration Open';
+  if (event.status === 'DRAFT') { badge = 'draft'; badgeLabel = 'Draft'; }
+  else if (event.status === 'CANCELLED') { badge = 'closed'; badgeLabel = 'Cancelled'; }
+  else if (event.status === 'COMPLETED' || seatsLeft <= 0) { badge = 'closed'; badgeLabel = 'Registration Closed'; }
+  else if (registered) { badge = 'registered'; badgeLabel = "You're Registered"; }
+  else if (fillingFast) { badge = 'filling'; badgeLabel = 'Filling Fast'; }
+  var flags = ['all'];
+  if (registered) flags.push('registered');
+  if (event.status === 'DRAFT') flags.push('draft');
+  if (event.status === 'PUBLISHED') flags.push('published');
+  if (event.status === 'COMPLETED' || event.status === 'CANCELLED') flags.push('past');
+  var desc = String(event.description || '').trim();
+  if (desc.length > 90) desc = desc.slice(0, 87) + '...';
+  var priceLabel = Number(event.price_paise) === 0 ? 'Free' : ('₹' + (Number(event.price_paise) / 100).toFixed(2));
+  var searchHay = String(event.title || '') + ' ' + String(event.venue || '');
+%>
+<article
+  class="gallery-card"
+  data-gallery-card
+  data-flags="<%= flags.join(' ') %>"
+  data-search="<%= searchHay.toLowerCase() %>"
+  data-status="<%= event.status %>"
+>
+  <div class="gallery-cover<%= cover ? '' : ' is-empty' %>">
+    <% if (cover) { %>
+      <img src="<%= cover %>" alt="" />
+    <% } %>
+    <span class="gallery-badge gallery-badge-<%= badge %>"><%= badgeLabel %></span>
+  </div>
+  <div class="gallery-body">
+    <h3><%= event.title %></h3>
+    <p class="gallery-meta">
+      <span><%= parts.weekday ? (parts.weekday + ', ') : '' %><%= formatDate(event.starts_at) %></span>
+      <span><%= event.venue || 'Venue TBA' %></span>
+    </p>
+    <p class="gallery-seats">
+      <% if (role === 'admin') { %>
+        <%= seatsLeft %> / <%= capacity %> seats left · <%= priceLabel %>
+      <% } else if (registered) { %>
+        Your pass is available · <%= priceLabel %>
+      <% } else if (event.status === 'COMPLETED' || event.status === 'CANCELLED' || seatsLeft <= 0) { %>
+        Registration closed
+      <% } else { %>
+        <%= seatsLeft %> / <%= capacity %> seats left · <%= priceLabel %>
+      <% } %>
+    </p>
+    <% if (desc && role === 'admin') { %>
+      <p class="muted gallery-desc"><%= desc %></p>
+    <% } %>
+    <div class="gallery-actions">
+      <% if (role === 'admin') { %>
+        <a class="btn btn-ghost btn-sm" href="/admin/events/<%= event.id %>/edit">Edit</a>
+        <% if (event.status === 'DRAFT') { %>
+          <form method="POST" action="/admin/events/<%= event.id %>/publish" class="inline-form">
+            <button class="btn btn-primary btn-sm" type="submit">Publish</button>
+          </form>
+        <% } %>
+        <% if (event.status !== 'CANCELLED' && event.status !== 'COMPLETED') { %>
+          <form
+            method="POST"
+            action="/admin/events/<%= event.id %>/cancel"
+            class="inline-form"
+            data-confirm="Cancel this event? Check-in will be blocked at the gate."
+            data-confirm-title="Cancel event"
+          >
+            <button class="btn btn-ghost btn-sm" type="submit">Cancel</button>
+          </form>
+        <% } %>
+      <% } else { %>
+        <% if (registered && (mineStatus === 'PAID' || mineStatus === 'CHECKED_IN')) { %>
+          <a class="btn btn-primary btn-sm" href="/member/registrations/<%= event.myRegistration.id %>/pass">View pass</a>
+        <% } else if (registered && mineStatus === 'PENDING_PAYMENT') { %>
+          <a class="btn btn-primary btn-sm" href="/member/registrations/<%= event.myRegistration.id %>/pay">Pay now</a>
+        <% } else if (!registered && event.status === 'PUBLISHED' && seatsLeft > 0) { %>
+          <a class="btn btn-primary btn-sm" href="/member/events/<%= event.id %>">Register</a>
+        <% } %>
+        <a class="btn btn-ghost btn-sm" href="/member/events/<%= event.id %>">View details</a>
+      <% } %>
+    </div>
+  </div>
+</article>

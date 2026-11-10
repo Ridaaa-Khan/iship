@@ -12,7 +12,7 @@ const scannerRouter = require('./routes/scanner');
 const memberRouter = require('./routes/member');
 const { dashboardPathForRole } = authRouter;
 const { log, logError } = require('./utils/logger');
-const { formatDisplay, toDatetimeLocal } = require('./utils/datetime');
+const { formatDisplay, toDatetimeLocal, eventDateParts } = require('./utils/datetime');
 const authService = require('./services/auth');
 
 const app = express();
@@ -29,6 +29,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(session(sessionConfig));
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 app.use(
   '/vendor/html5-qrcode',
   express.static(path.join(__dirname, '..', 'node_modules', 'html5-qrcode'))
@@ -40,8 +41,12 @@ app.use(async (req, res, next) => {
       req.session.user = await authService.withDisplayName(req.session.user);
     }
     res.locals.currentUser = req.session.user || null;
+    res.locals.currentPath = (req.originalUrl || req.path || '').split('?')[0];
     res.locals.formatDate = formatDisplay;
     res.locals.toDatetimeLocal = toDatetimeLocal;
+    res.locals.eventDateParts = eventDateParts;
+    res.locals.eventCoverUrl = (filename) =>
+      filename ? `/uploads/events/${String(filename).replace(/^.*[\\/]/, '')}` : null;
     next();
   } catch (err) {
     next(err);

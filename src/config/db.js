@@ -1,6 +1,7 @@
 const mysql = require('mysql2/promise');
 const env = require('./env');
 const { log, logError } = require('../utils/logger');
+const { ensureUploadDir } = require('../middleware/eventCover');
 
 const pool = mysql.createPool({
   host: env.db.host,
@@ -38,6 +39,15 @@ async function connect() {
       LEFT JOIN scanner_profiles sp ON sp.user_id = u.id
       WHERE u.role = 'SCANNER' AND sp.id IS NULL
     `);
+    const [coverCols] = await pool.query(
+      `SHOW COLUMNS FROM events LIKE 'cover_image'`
+    );
+    if (!coverCols.length) {
+      await pool.query(
+        `ALTER TABLE events ADD COLUMN cover_image VARCHAR(255) NULL AFTER price_paise`
+      );
+    }
+    ensureUploadDir();
     log('MySQL pool connected');
     return pool;
   } catch (err) {

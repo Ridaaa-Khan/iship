@@ -7,7 +7,7 @@
     <main class="content">
       <div class="dash-header">
         <div>
-          <h1><%= dashboard.greeting %></h1>
+          <h1>Welcome, <span class="accent-name"><%= dashboard.greetingName || 'Member' %></span></h1>
           <p class="muted"><%= dashboard.subtitle %></p>
         </div>
         <div class="dash-date"><%= dashboard.todayLabel %></div>
@@ -24,7 +24,7 @@
           <div class="stat-icon">◷</div>
           <div class="stat-label">Last scanned</div>
           <div class="stat-value stat-value-sm">
-            <%= dashboard.stats.lastScan ? formatDate(dashboard.stats.lastScan.created_at) : '' %>
+            <%= dashboard.stats.lastScan ? formatDate(dashboard.stats.lastScan.created_at) : '—' %>
           </div>
           <div class="stat-sub">
             <% if (dashboard.stats.lastScan) { %>
@@ -43,72 +43,84 @@
       </section>
 
       <section class="member-dash-grid">
-        <article class="dash-panel">
-          <div class="dash-panel-head">
+        <div class="member-dash-main">
+          <article class="dash-panel">
+            <div class="dash-panel-head">
+              <div>
+                <h2>Recent activity</h2>
+                <p class="muted">Your latest entry and exit scans.</p>
+              </div>
+              <a class="panel-link" href="/member/registrations">View all →</a>
+            </div>
+            <% if (!dashboard.recent.length) { %>
+              <p class="muted">No activity yet.</p>
+            <% } else { %>
+              <div class="activity-list">
+                <% dashboard.recent.slice(0, 5).forEach((row) => { %>
+                  <div class="activity-row">
+                    <div class="activity-main">
+                      <span class="activity-icon" aria-hidden="true">→</span>
+                      <div>
+                        <strong>Entry scanned</strong>
+                        <div class="muted"><%= row.device_label || row.event_title %></div>
+                      </div>
+                    </div>
+                    <div class="muted"><%= formatDate(row.created_at) %></div>
+                  </div>
+                <% }) %>
+              </div>
+            <% } %>
+          </article>
+
+          <article class="explore-banner">
             <div>
-              <h2>Recent activity</h2>
-              <p class="muted">Your latest entry and exit scans.</p>
+              <h2>Explore events</h2>
+              <p>Discover upcoming events, workshops and club activities and register now.</p>
+              <a class="btn btn-primary" href="/member/events">Browse Events →</a>
             </div>
-            <a class="muted" href="/member/registrations">View all</a>
-          </div>
-          <% if (!dashboard.recent.length) { %>
-            <p class="muted">No activity yet.</p>
-          <% } else { %>
-            <div class="table-wrap" style="margin-bottom:0;">
-              <table class="data-table">
-                <thead>
-                  <tr>
-                    <th>Type</th>
-                    <th>Details</th>
-                    <th>Time</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <% dashboard.recent.forEach((row) => { %>
-                    <tr>
-                      <td>Entry scanned</td>
-                      <td><%= row.device_label || row.event_title %></td>
-                      <td><%= formatDate(row.created_at) %></td>
-                    </tr>
-                  <% }) %>
-                </tbody>
-              </table>
-            </div>
-          <% } %>
-        </article>
+            <div class="explore-art" aria-hidden="true">📅</div>
+          </article>
+        </div>
 
         <article class="dash-panel">
           <div class="dash-panel-head">
             <div>
               <h2>Your upcoming events</h2>
-              <p class="muted">Events you're registered for.</p>
+              <p class="muted">Events you can register for.</p>
             </div>
-            <a class="muted" href="/member/events">View all</a>
+            <a class="panel-link" href="/member/events">View all →</a>
           </div>
-          <% if (!dashboard.upcoming.length) { %>
+          <% var upcomingCards = dashboard.openEvents && dashboard.openEvents.length ? dashboard.openEvents : dashboard.upcoming; %>
+          <% if (!upcomingCards.length) { %>
             <p class="muted">No upcoming events.</p>
           <% } else { %>
-            <div class="table-wrap" style="margin-bottom:0;">
-              <table class="data-table">
-                <thead>
-                  <tr>
-                    <th>Event</th>
-                    <th>Starts</th>
-                    <th>Venue</th>
-                    <th>Add-ons</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <% dashboard.upcoming.forEach((row) => { %>
-                    <tr>
-                      <td><a href="/member/events/<%= row.event_id %>"><%= row.title %></a></td>
-                      <td><%= formatDate(row.starts_at) %></td>
-                      <td><%= row.venue || '—' %></td>
-                      <td><%= Number(row.addon_count) > 0 ? row.addon_count : '—' %></td>
-                    </tr>
-                  <% }) %>
-                </tbody>
-              </table>
+            <div class="upcoming-list">
+              <% upcomingCards.forEach((row) => { %>
+                <% var parts = eventDateParts(row.starts_at); %>
+                <% var eventId = row.event_id || row.id; %>
+                <% var canRegister = !row.status || row.status === 'PUBLISHED'; %>
+                <div class="upcoming-item">
+                  <div class="date-badge">
+                    <span><%= parts.month %></span>
+                    <strong><%= parts.day %></strong>
+                  </div>
+                  <div class="upcoming-copy">
+                    <h3><%= row.title %></h3>
+                    <p>
+                      <%= row.starts_at ? formatDate(row.starts_at) : '' %>
+                      <% if (row.venue) { %> · <%= row.venue %><% } %>
+                    </p>
+                    <% if (row.seatsLeft != null) { %>
+                      <p class="muted"><%= row.seatsLeft %> seats left</p>
+                    <% } %>
+                  </div>
+                  <% if (canRegister && row.seatsLeft != null) { %>
+                    <a class="btn btn-primary btn-sm" href="/member/events/<%= eventId %>">Register</a>
+                  <% } else { %>
+                    <a class="btn btn-ghost btn-sm" href="/member/events/<%= eventId %>">View</a>
+                  <% } %>
+                </div>
+              <% }) %>
             </div>
           <% } %>
         </article>

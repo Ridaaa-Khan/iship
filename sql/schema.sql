@@ -69,6 +69,7 @@ CREATE TABLE events (
   doors_close_at  DATETIME NOT NULL,
   capacity        INT UNSIGNED NOT NULL,
   price_paise     INT UNSIGNED NOT NULL DEFAULT 0,
+  cover_image     VARCHAR(255) NULL,
   status          ENUM('DRAFT', 'PUBLISHED', 'CANCELLED', 'COMPLETED') NOT NULL DEFAULT 'DRAFT',
   created_by      BIGINT UNSIGNED NULL,
   created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,

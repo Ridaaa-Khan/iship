@@ -1,6 +1,7 @@
 const membersDb = require('../db/members');
 const checkInsDb = require('../db/checkIns');
 const registrationsDb = require('../db/registrations');
+const registrationService = require('./registration');
 const {
   formatDisplay,
   greetingForNow,
@@ -79,8 +80,23 @@ async function getMemberDashboard(userId) {
     ? await registrationsDb.listUpcomingForMember(profile.id, 5)
     : [];
 
+  let openEvents = [];
+  try {
+    const listed = await registrationService.listPublishedEventsForMember(userId);
+    openEvents = (listed.events || [])
+      .filter((event) => {
+        const mine = event.myRegistration;
+        const taken = mine && mine.status !== 'CANCELLED';
+        return event.status === 'PUBLISHED' && !taken;
+      })
+      .slice(0, 3);
+  } catch (err) {
+    openEvents = [];
+  }
+
   return {
     greeting: `Welcome, ${name}`,
+    greetingName: name,
     subtitle: "Here's an overview of your activity.",
     todayLabel: formatDisplay(new Date()),
     stats: {
@@ -91,6 +107,7 @@ async function getMemberDashboard(userId) {
     },
     recent,
     upcoming,
+    openEvents,
   };
 }
 

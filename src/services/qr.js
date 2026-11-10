@@ -4,7 +4,8 @@ const AppError = require('../utils/AppError');
 const registrationsDb = require('../db/registrations');
 const qrCredentialsDb = require('../db/qrCredentials');
 
-const QR_PREFIX = 'ISHIP';
+const QR_PREFIX = 'EVENTRA';
+const QR_PREFIXES = new Set(['EVENTRA', 'ISHIP']);
 
 
 function createPublicId() {
@@ -40,7 +41,7 @@ function parseQrPayload(token) {
   const parts = token.trim().split('.');
   if (parts.length !== 3) return null;
   const [prefix, publicId, secret] = parts;
-  if (prefix !== QR_PREFIX) return null;
+  if (!QR_PREFIXES.has(prefix)) return null;
   if (!publicId || !secret) return null;
   return { publicId, secret };
 }

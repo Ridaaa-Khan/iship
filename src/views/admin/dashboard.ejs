@@ -68,31 +68,24 @@
         <% if (!dashboard.recent.length) { %>
           <p class="muted">No activity yet.</p>
         <% } else { %>
-          <div class="table-wrap" style="margin-bottom:0;">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>Time</th>
-                  <th>Member</th>
-                  <th>Type</th>
-                  <th>Scanner</th>
-                </tr>
-              </thead>
-              <tbody>
-                <% dashboard.recent.forEach((row) => { %>
-                  <tr>
-                    <td><%= formatDate(row.created_at) %></td>
-                    <td><%= row.full_name || '—' %></td>
-                    <td>
-                      <span class="status-pill <%= row.result === 'ALLOWED' ? 'allowed' : 'denied' %>">
-                        <%= row.result === 'ALLOWED' ? 'Entry' : 'Denied' %>
-                      </span>
-                    </td>
-                    <td><%= row.scanner_email || row.device_label || '—' %></td>
-                  </tr>
-                <% }) %>
-              </tbody>
-            </table>
+          <div class="activity-list">
+            <% dashboard.recent.slice(0, 5).forEach((row) => { %>
+              <div class="activity-row">
+                <div class="activity-main">
+                  <span class="activity-icon <%= row.result === 'ALLOWED' ? '' : 'is-bad' %>" aria-hidden="true">
+                    <%= row.result === 'ALLOWED' ? '→' : '✕' %>
+                  </span>
+                  <div>
+                    <strong><%= row.full_name || '—' %></strong>
+                    <div class="muted">
+                      <%= row.result === 'ALLOWED' ? 'Entry' : 'Denied' %>
+                      · <%= row.scanner_email || row.device_label || '—' %>
+                    </div>
+                  </div>
+                </div>
+                <div class="muted"><%= formatDate(row.created_at) %></div>
+              </div>
+            <% }) %>
           </div>
         <% } %>
       </section>
@@ -110,11 +103,11 @@
         labels: series[7].labels,
         datasets: [{
           data: series[7].values,
-          borderColor: '#3b82f6',
-          backgroundColor: 'rgba(59, 130, 246, 0.12)',
+          borderColor: '#8B5CF6',
+          backgroundColor: 'rgba(139, 92, 246, 0.12)',
           borderWidth: 2,
           pointRadius: 3,
-          pointBackgroundColor: '#3b82f6',
+          pointBackgroundColor: '#8B5CF6',
           tension: 0.35,
           fill: false
         }]
@@ -125,13 +118,13 @@
         plugins: { legend: { display: false } },
         scales: {
           x: {
-            ticks: { color: '#9aa8c7' },
-            grid: { color: 'rgba(36, 48, 73, 0.6)' }
+            ticks: { color: '#94A3B8' },
+            grid: { color: 'rgba(42, 51, 72, 0.8)' }
           },
           y: {
             beginAtZero: true,
-            ticks: { color: '#9aa8c7', precision: 0 },
-            grid: { color: 'rgba(36, 48, 73, 0.6)' }
+            ticks: { color: '#94A3B8', precision: 0 },
+            grid: { color: 'rgba(42, 51, 72, 0.8)' }
           }
         }
       }

@@ -4,7 +4,7 @@
   <%- include('../partials/head') %>
   <div class="shell">
     <%- include('../partials/sidebar') %>
-    <main class="content">
+    <main class="content" data-gallery>
       <div class="page-header">
         <div>
           <h1>Events</h1>
@@ -16,48 +16,30 @@
       <% if (!events.length) { %>
         <p class="muted">No events yet. Create your first one.</p>
       <% } else { %>
-        <div class="table-wrap">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>Title</th>
-                <th>Starts</th>
-                <th>Ends at</th>
-                <th>Capacity</th>
-                <th>Price</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              <% events.forEach((event) => { %>
-                <tr>
-                  <td><%= event.title %></td>
-                  <td><%= formatDate(event.starts_at) %></td>
-                  <td><%= formatDate(event.ends_at) %></td>
-                  <td><%= event.capacity %></td>
-                  <td>₹<%= (event.price_paise / 100).toFixed(2) %></td>
-                  <td>
-                    <span class="status-pill <%= String(event.status).toLowerCase() %>"><%= event.status %></span>
-                  </td>
-                  <td class="actions">
-                    <a class="btn btn-ghost" href="/admin/events/<%= event.id %>/edit">Edit</a>
-                    <% if (event.status === 'DRAFT') { %>
-                      <form method="POST" action="/admin/events/<%= event.id %>/publish" class="inline-form">
-                        <button class="btn btn-primary" type="submit">Publish</button>
-                      </form>
-                    <% } %>
-                    <% if (event.status !== 'CANCELLED' && event.status !== 'COMPLETED') { %>
-                      <form method="POST" action="/admin/events/<%= event.id %>/cancel" class="inline-form">
-                        <button class="btn btn-ghost" type="submit">Cancel</button>
-                      </form>
-                    <% } %>
-                  </td>
-                </tr>
-              <% }) %>
-            </tbody>
-          </table>
+        <div class="gallery-toolbar">
+          <div class="gallery-tabs">
+            <button type="button" class="gallery-tab is-active" data-gallery-tab="all">All events</button>
+            <button type="button" class="gallery-tab" data-gallery-tab="draft">Draft</button>
+            <button type="button" class="gallery-tab" data-gallery-tab="published">Published</button>
+            <button type="button" class="gallery-tab" data-gallery-tab="past">Past</button>
+          </div>
+          <div class="page-tools">
+            <input type="search" data-gallery-search placeholder="Search events..." />
+            <select data-gallery-status>
+              <option value="">All status</option>
+              <option value="DRAFT">Draft</option>
+              <option value="PUBLISHED">Published</option>
+              <option value="CANCELLED">Cancelled</option>
+              <option value="COMPLETED">Completed</option>
+            </select>
+          </div>
         </div>
+        <div class="gallery-grid">
+          <% events.forEach((event) => { %>
+            <%- include('../partials/event-gallery-card', { event: event, role: 'admin' }) %>
+          <% }) %>
+        </div>
+        <p class="muted" data-gallery-empty hidden>No events match this filter.</p>
       <% } %>
     </main>
   </div>

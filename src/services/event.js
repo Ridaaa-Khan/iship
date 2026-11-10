@@ -1,6 +1,8 @@
 const AppError = require('../utils/AppError');
 const eventsDb = require('../db/events');
 const { fromDatetimeLocal } = require('../utils/datetime');
+const { deleteCoverFile } = require('../middleware/eventCover');
+const { log } = require('../utils/logger');
 
 function toDbPayload(body, createdBy) {
   return {
@@ -18,8 +20,26 @@ function toDbPayload(body, createdBy) {
   };
 }
 
+function wantsCoverRemoved(body) {
+  const value = body && body.removeCover;
+  return value === '1' || value === 'on' || value === 'true' || value === true;
+}
+
+async function withSeatCounts(events) {
+  const rows = [];
+  for (const event of events) {
+    const taken = await eventsDb.countTakenSeats(event.id);
+    rows.push({
+      ...event,
+      seatsTaken: taken,
+      seatsLeft: Math.max(Number(event.capacity) - taken, 0),
+    });
+  }
+  return rows;
+}
+
 async function listEvents() {
-  return eventsDb.listEvents();
+  return withSeatCounts(await eventsDb.listEvents());
 }
 
 async function getEvent(id) {
@@ -30,17 +50,31 @@ async function getEvent(id) {
   return event;
 }
 
-async function createEvent(body, adminUserId) {
+async function createEvent(body, adminUserId, file) {
   const payload = toDbPayload(body, adminUserId);
+  payload.coverImage = file && file.filename ? file.filename : null;
   const id = await eventsDb.createEvent(payload);
+  log('Event created', id);
   return getEvent(id);
 }
 
-async function updateEvent(id, body) {
-  await getEvent(id);
+async function updateEvent(id, body, file) {
+  const existing = await getEvent(id);
   const payload = toDbPayload(body, null);
   delete payload.createdBy;
+
+  let coverImage = existing.cover_image || null;
+  if (file && file.filename) {
+    deleteCoverFile(existing.cover_image);
+    coverImage = file.filename;
+  } else if (wantsCoverRemoved(body)) {
+    deleteCoverFile(existing.cover_image);
+    coverImage = null;
+  }
+  payload.coverImage = coverImage;
+
   await eventsDb.updateEvent(id, payload);
+  log('Event updated', id);
   return getEvent(id);
 }
 

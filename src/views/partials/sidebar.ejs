@@ -1,27 +1,73 @@
 <aside class="sidebar">
+  <a class="sidebar-brand" href="/">Eventra</a>
   <nav class="sidebar-nav">
+    <% var path = typeof currentPath === 'string' ? currentPath : ''; %>
+    <% function navOn(href, exact) { return exact ? path === href : (path === href || path.indexOf(href + '/') === 0); } %>
     <% if (currentUser && currentUser.role === 'ADMIN') { %>
-      <a class="nav-link" href="/admin">Dashboard</a>
-      <a class="nav-link" href="/admin/events">Events</a>
-      <a class="nav-link" href="/admin/members">Members</a>
-      <a class="nav-link" href="/admin/registrations">Registrations</a>
-      <a class="nav-link" href="/admin/entries/today">Today's entries</a>
-      <a class="nav-link" href="/admin/attendance">Attendance</a>
-      <a class="nav-link" href="/admin/scanners">Scanners</a>
+      <a class="nav-link<%= navOn('/admin', true) ? ' active' : '' %>" href="/admin">
+        <span class="nav-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 10.5 12 4l8 6.5V20H4z"/><path d="M9 20v-6h6v6"/></svg></span>
+        Dashboard
+      </a>
+      <a class="nav-link<%= navOn('/admin/events') ? ' active' : '' %>" href="/admin/events">
+        <span class="nav-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4M16 3v4M4 10h16"/></svg></span>
+        Events
+      </a>
+      <a class="nav-link<%= navOn('/admin/members') ? ' active' : '' %>" href="/admin/members">
+        <span class="nav-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3"/><path d="M4 19c1.2-3 3.4-4.5 5-4.5S12.8 16 14 19"/><circle cx="17" cy="9" r="2.2"/><path d="M16 19c.4-1.6 1.5-2.8 3-3.4"/></svg></span>
+        Members
+      </a>
+      <a class="nav-link<%= navOn('/admin/registrations') ? ' active' : '' %>" href="/admin/registrations">
+        <span class="nav-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M7 4h10v16H7z"/><path d="M10 8h4M10 12h4"/></svg></span>
+        Registrations
+      </a>
+      <a class="nav-link<%= navOn('/admin/entries') ? ' active' : '' %>" href="/admin/entries/today">
+        <span class="nav-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19V5h12l4 4v10z"/><path d="M12 5v4h4"/></svg></span>
+        Today's entries
+      </a>
+      <a class="nav-link<%= navOn('/admin/attendance') ? ' active' : '' %>" href="/admin/attendance">
+        <span class="nav-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 12l4 4 10-10"/></svg></span>
+        Attendance
+      </a>
+      <a class="nav-link<%= navOn('/admin/scanners') ? ' active' : '' %>" href="/admin/scanners">
+        <span class="nav-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="6" width="16" height="12" rx="2"/><path d="M8 10h8M8 14h5"/></svg></span>
+        Scanners
+      </a>
     <% } else if (currentUser && currentUser.role === 'SCANNER') { %>
-      <a class="nav-link" href="/scanner">Dashboard</a>
-      <a class="nav-link" href="/scanner/scan">Open scanner</a>
-      <a class="nav-link" href="/scanner/entries">Today's entries</a>
+      <a class="nav-link<%= navOn('/scanner', true) ? ' active' : '' %>" href="/scanner">
+        <span class="nav-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 10.5 12 4l8 6.5V20H4z"/><path d="M9 20v-6h6v6"/></svg></span>
+        Dashboard
+      </a>
+      <a class="nav-link<%= navOn('/scanner/scan') ? ' active' : '' %>" href="/scanner/scan">
+        <span class="nav-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 6h5v5H6zM13 6h5v5h-5zM6 13h5v5H6z"/><path d="M14 14h2v2h-2zM18 14v4h-4"/></svg></span>
+        Open scanner
+      </a>
+      <a class="nav-link<%= navOn('/scanner/entries') ? ' active' : '' %>" href="/scanner/entries">
+        <span class="nav-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 7h13M8 12h13M8 17h13M3 7h.01M3 12h.01M3 17h.01"/></svg></span>
+        Today's entries
+      </a>
     <% } else if (currentUser && currentUser.role === 'MEMBER') { %>
-      <a class="nav-link" href="/member">Dashboard</a>
-      <a class="nav-link" href="/member/events">Events</a>
-      <a class="nav-link" href="/member/registrations">My registrations</a>
-      <a class="nav-link" href="/member/profile">Profile</a>
+      <a class="nav-link<%= navOn('/member', true) ? ' active' : '' %>" href="/member">
+        <span class="nav-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 10.5 12 4l8 6.5V20H4z"/><path d="M9 20v-6h6v6"/></svg></span>
+        Dashboard
+      </a>
+      <a class="nav-link<%= navOn('/member/events') ? ' active' : '' %>" href="/member/events">
+        <span class="nav-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4M16 3v4M4 10h16"/></svg></span>
+        Events
+      </a>
+      <a class="nav-link<%= navOn('/member/registrations') ? ' active' : '' %>" href="/member/registrations">
+        <span class="nav-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M7 7h10v4H7z"/><path d="M6 11h12v9H6z"/></svg></span>
+        My registrations
+      </a>
+      <a class="nav-link<%= navOn('/member/profile') ? ' active' : '' %>" href="/member/profile">
+        <span class="nav-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="3"/><path d="M5 19c1.2-3 3.8-4.5 7-4.5S17.8 16 19 19"/></svg></span>
+        Profile
+      </a>
     <% } %>
   </nav>
-  <% if (currentUser && (currentUser.role === 'ADMIN' || currentUser.role === 'SCANNER')) { %>
+  <% if (currentUser) { %>
     <form class="sidebar-footer" action="/auth/logout" method="POST">
       <button type="submit" class="btn btn-danger btn-logout">Logout</button>
     </form>
   <% } %>
 </aside>
+<%- include('confirm-modal') %>

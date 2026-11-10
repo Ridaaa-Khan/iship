@@ -1,7 +1,7 @@
 
 INSERT INTO users (email, password_hash, role, is_active)
 VALUES (
-  'admin@iship.local',
+  'admin@eventra.local',
   '$2b$12$8AJpcSUU6zLnyjOJmNMTi.UZ.2pb/ymoh9874FUGqNXCTjceQQjQC',
   'ADMIN',
   1
@@ -13,7 +13,7 @@ ON DUPLICATE KEY UPDATE
 
 INSERT INTO users (email, password_hash, role, is_active)
 VALUES (
-  'member@iship.local',
+  'member@eventra.local',
   '$2b$12$8AJpcSUU6zLnyjOJmNMTi.UZ.2pb/ymoh9874FUGqNXCTjceQQjQC',
   'MEMBER',
   1
@@ -26,7 +26,10 @@ ON DUPLICATE KEY UPDATE
 INSERT INTO member_profiles (user_id, full_name, status)
 SELECT id, 'Demo Member', 'ACTIVE'
 FROM users
-WHERE email = 'member@iship.local'
+WHERE email = 'member@eventra.local'
 ON DUPLICATE KEY UPDATE
   full_name = VALUES(full_name),
   status = VALUES(status);
+
+-- Optional: assign cover images for demo events (files under uploads/events/)
+-- See sql/seed-event-covers.sql for the full UPDATE list.

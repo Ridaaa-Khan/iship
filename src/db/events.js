@@ -5,11 +5,11 @@ async function createEvent(data) {
     `INSERT INTO events (
       title, description, venue,
       starts_at, ends_at, doors_open_at, doors_close_at,
-      capacity, price_paise, status, created_by
+      capacity, price_paise, cover_image, status, created_by
     ) VALUES (
       :title, :description, :venue,
       :startsAt, :endsAt, :doorsOpenAt, :doorsCloseAt,
-      :capacity, :pricePaise, :status, :createdBy
+      :capacity, :pricePaise, :coverImage, :status, :createdBy
     )`,
     data
   );
@@ -28,6 +28,7 @@ async function updateEvent(id, data) {
       doors_close_at = :doorsCloseAt,
       capacity = :capacity,
       price_paise = :pricePaise,
+      cover_image = :coverImage,
       status = :status
      WHERE id = :id`,
     { id, ...data }
@@ -56,8 +57,8 @@ async function findEventById(id) {
 async function listEvents() {
   await completeEndedEvents();
   const [rows] = await pool.execute(
-    `SELECT id, title, venue, starts_at, ends_at, doors_open_at, doors_close_at,
-            capacity, price_paise, status, created_at
+    `SELECT id, title, description, venue, starts_at, ends_at, doors_open_at, doors_close_at,
+            capacity, price_paise, cover_image, status, created_at
      FROM events
      ORDER BY starts_at DESC`
   );
@@ -76,7 +77,7 @@ async function listPublishedEvents() {
     await completeEndedEvents();
     const [rows] = await pool.execute(
       `SELECT id, title, description, venue, starts_at, ends_at,
-              doors_open_at, doors_close_at, capacity, price_paise, status
+              doors_open_at, doors_close_at, capacity, price_paise, cover_image, status
        FROM events
        WHERE status IN ('PUBLISHED', 'COMPLETED')
        ORDER BY starts_at ASC`

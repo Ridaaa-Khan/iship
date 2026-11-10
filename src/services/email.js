@@ -43,7 +43,7 @@ function wrapEmailHtml(heroTitle, bodyHtml) {
         <table role="presentation" width="700" cellspacing="0" cellpadding="0" style="width:700px;max-width:100%;border-collapse:collapse;">
           <tr>
             <td style="background:#f9f9fb;border-radius:8px;padding:10px;text-align:center;font-family:Inter,Helvetica,Arial,sans-serif;font-size:13px;color:#040b22;">
-              iShip Club
+              Eventra
             </td>
           </tr>
           <tr>
@@ -63,7 +63,7 @@ function wrapEmailHtml(heroTitle, bodyHtml) {
           </tr>
           <tr>
             <td style="padding:24px;text-align:center;font-family:Inter,Helvetica,Arial,sans-serif;font-size:12px;color:#6b7280;">
-              © iShip
+              © Eventra
             </td>
           </tr>
         </table>
@@ -165,7 +165,7 @@ async function sendPassPdfEmail(registrationId) {
       `Your QR code is your entry pass. Please do not share it with anyone, as it is uniquely assigned to your registration.\n\n` +
       `We recommend downloading the attached PDF before arriving so you can access your QR code easily, even without an internet connection.\n\n` +
       `See you at the event!\n\n` +
-      `Iship\n`;
+      `Eventra\n`;
 
     const html = wrapEmailHtml(
       'You&#39;re registered!',
@@ -186,7 +186,7 @@ async function sendPassPdfEmail(registrationId) {
         <p>Your QR code is your entry pass. Please do not share it with anyone, as it is uniquely assigned to your registration.</p>
         <p>We recommend downloading the attached PDF before arriving so you can access your QR code easily, even without an internet connection.</p>
         <p>See you at the event!</p>
-        <p><strong>Iship</strong></p>
+        <p><strong>Eventra</strong></p>
       `
     );
 
@@ -199,7 +199,7 @@ async function sendPassPdfEmail(registrationId) {
       html,
       attachments: [
         {
-          filename: `iship-pass-${registrationId}.pdf`,
+          filename: `eventra-pass-${registrationId}.pdf`,
           content: pdfBuffer,
           contentType: 'application/pdf',
         },
@@ -239,9 +239,9 @@ async function sendCheckInAlertEmail({
       `Venue: ${venue}\n` +
       `Date: ${eventDate}\n\n` +
       `We hope you have an amazing experience!\n\n` +
-      `If you did not attend this event or believe this entry was recorded incorrectly, please report it to admin@iship.local.\n\n` +
+      `If you did not attend this event or believe this entry was recorded incorrectly, please report it to admin@eventra.local.\n\n` +
       `See you around!\n\n` +
-      `Iship\n`;
+      `Eventra\n`;
 
     const html = wrapEmailHtml(
       'Welcome!',
@@ -257,10 +257,10 @@ async function sendCheckInAlertEmail({
         </p>
         <p>We hope you have an amazing experience!</p>
         <p>If you did not attend this event or believe this entry was recorded incorrectly, please report it to
-          <a href="mailto:admin@iship.local">admin@iship.local</a>.
+          <a href="mailto:admin@eventra.local">admin@eventra.local</a>.
         </p>
         <p>See you around! 👋</p>
-        <p><strong>Iship</strong></p>
+        <p><strong>Eventra</strong></p>
       `
     );
 
@@ -319,7 +319,7 @@ async function sendAddonChangeEmail({
       (status === 'PENDING_PAYMENT'
         ? `Please complete payment from My registrations if you have not already.\n\n`
         : `Your existing QR still works. Fewer people than ${partySize} may enter, but not more.\n\n`) +
-      `Iship\n`;
+      `Eventra\n`;
 
     const html = wrapEmailHtml(
       'Add-ons updated',
@@ -337,7 +337,7 @@ async function sendAddonChangeEmail({
         ${status === 'PENDING_PAYMENT'
           ? '<p>Please complete payment from <strong>My registrations</strong> if you have not already.</p>'
           : `<p>Your existing QR still works. Fewer people than ${partySize} may enter, but not more.</p>`}
-        <p><strong>Iship</strong></p>
+        <p><strong>Eventra</strong></p>
       `
     );
 
@@ -347,7 +347,7 @@ async function sendAddonChangeEmail({
         const pass = await qrService.getPassForMember(registrationId, userId);
         const pdfBuffer = await pdfService.buildPassPdf(pass);
         attachments.push({
-          filename: `iship-pass-${registrationId}.pdf`,
+          filename: `eventra-pass-${registrationId}.pdf`,
           content: pdfBuffer,
           contentType: 'application/pdf',
         });
@@ -405,7 +405,7 @@ async function sendCancelRegistrationEmail({
       `Date: ${eventDate}\n` +
       `Venue: ${venue}\n\n` +
       `Your QR pass is no longer valid.\n\n` +
-      `Iship\n`;
+      `Eventra\n`;
 
     const html = wrapEmailHtml(
       'Registration cancelled',
@@ -420,7 +420,7 @@ async function sendCancelRegistrationEmail({
           ${addonHtml}
         </ul>
         <p>Your QR pass is no longer valid.</p>
-        <p><strong>Iship</strong></p>
+        <p><strong>Eventra</strong></p>
       `
     );
 

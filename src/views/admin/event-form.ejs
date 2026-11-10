@@ -4,35 +4,45 @@
   <%- include('../partials/head') %>
   <div class="shell">
     <%- include('../partials/sidebar') %>
-    <main class="content event-form-page">
-      <div class="event-form-wrap">
-        <h1><%= mode === 'create' ? 'Create event' : 'Edit event' %></h1>
-        <p class="muted">Door times control when QR check-in is allowed later.</p>
+    <main class="content">
+      <div class="page-header">
+        <div>
+          <h1><%= mode === 'create' ? 'Create event' : 'Edit event' %></h1>
+          <p class="muted">Door times control when QR check-in is allowed later.</p>
+        </div>
+      </div>
 
-        <% if (error) { %>
-          <div class="alert"><%= error %></div>
+      <% if (error) { %>
+        <div class="alert"><%= error %></div>
+      <% } %>
+
+      <form
+        method="POST"
+        action="<%= mode === 'create' ? '/admin/events' : '/admin/events/' + event.id %>"
+        class="form-panel form-wide"
+        enctype="multipart/form-data"
+      >
+        <% if (event.cover_image) { %>
+          <input type="hidden" name="existingCover" value="<%= event.cover_image %>" />
         <% } %>
 
-        <form
-          method="POST"
-          action="<%= mode === 'create' ? '/admin/events' : '/admin/events/' + event.id %>"
-          class="stack form-panel"
-        >
+        <div class="form-grid">
           <label>
             Title
-            <input type="text" name="title" value="<%= event.title || '' %>" required />
+            <input type="text" name="title" value="<%= event.title || '' %>" required maxlength="200" />
           </label>
-
-          <label>
-            Description
-            <textarea name="description" rows="4"><%= event.description || '' %></textarea>
-          </label>
-
           <label>
             Venue
-            <input type="text" name="venue" value="<%= event.venue || '' %>" autocomplete="off" />
+            <input type="text" name="venue" value="<%= event.venue || '' %>" autocomplete="off" maxlength="255" />
           </label>
+        </div>
 
+        <label>
+          Description
+          <textarea name="description" rows="4"><%= event.description || '' %></textarea>
+        </label>
+
+        <div class="form-grid">
           <div class="datetime-group">
             <div class="datetime-group-title">Event time</div>
             <div class="datetime-grid">
@@ -46,7 +56,6 @@
               </label>
             </div>
           </div>
-
           <div class="datetime-group">
             <div class="datetime-group-title">Door time</div>
             <div class="datetime-grid">
@@ -60,18 +69,17 @@
               </label>
             </div>
           </div>
+        </div>
 
-          <div class="form-grid">
-            <label>
-              Capacity
-              <input type="number" name="capacity" min="1" value="<%= event.capacity || 100 %>" required />
-            </label>
-            <label>
-              Price (₹) — use 0 for free
-              <input type="number" name="priceRupees" min="0" step="0.01" value="<%= event.priceRupees || '0.00' %>" required />
-            </label>
-          </div>
-
+        <div class="form-grid form-grid-3">
+          <label>
+            Capacity
+            <input type="number" name="capacity" min="1" value="<%= event.capacity || 100 %>" required />
+          </label>
+          <label>
+            Price (₹) — use 0 for free
+            <input type="number" name="priceRupees" min="0" step="0.01" value="<%= event.priceRupees || '0.00' %>" required />
+          </label>
           <label>
             Status
             <select name="status">
@@ -80,13 +88,34 @@
               <% }) %>
             </select>
           </label>
+        </div>
 
-          <div class="form-actions">
-            <button class="btn btn-primary" type="submit">Save</button>
-            <a class="btn btn-ghost" href="/admin/events">Back</a>
+        <div class="cover-field">
+          <div class="datetime-group-title">Event picture</div>
+          <div class="cover-preview<%= event.cover_image ? '' : ' is-empty' %>">
+            <% if (event.cover_image) { %>
+              <img src="<%= eventCoverUrl(event.cover_image) %>" alt="Current event picture" />
+            <% } else { %>
+              <span>No picture yet — a placeholder will be shown on event cards.</span>
+            <% } %>
           </div>
-        </form>
-      </div>
+          <label>
+            <%= event.cover_image ? 'Replace picture' : 'Upload picture' %>
+            <input type="file" name="coverImage" accept="image/jpeg,image/png,image/webp,image/gif" />
+          </label>
+          <% if (event.cover_image) { %>
+            <label class="cover-remove">
+              <input type="checkbox" name="removeCover" value="1" />
+              Remove current picture
+            </label>
+          <% } %>
+        </div>
+
+        <div class="form-actions">
+          <button class="btn btn-primary" type="submit">Save</button>
+          <a class="btn btn-ghost" href="/admin/events">Back</a>
+        </div>
+      </form>
     </main>
   </div>
 </body>

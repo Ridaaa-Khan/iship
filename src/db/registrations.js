@@ -200,7 +200,8 @@ async function markCheckedIn(registrationId, connection = pool) {
 async function listUpcomingForMember(memberId, limit = 5) {
   const safeLimit = Math.min(20, Math.max(1, Number(limit) || 5));
   const [rows] = await pool.execute(
-    `SELECT r.id, r.status, r.addon_count, e.id AS event_id, e.title, e.venue, e.starts_at
+    `SELECT r.id, r.status, r.addon_count, e.id AS event_id, e.title, e.venue,
+            e.starts_at, e.cover_image, e.capacity, e.price_paise
      FROM event_registrations r
      INNER JOIN events e ON e.id = r.event_id
      WHERE r.member_id = :memberId

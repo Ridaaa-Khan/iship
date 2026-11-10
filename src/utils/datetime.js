@@ -61,6 +61,25 @@ function fromDatetimeLocal(value) {
   function ymd(d) {
     return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
   }
+
+  const SHORT_MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+  function eventDateParts(value) {
+    if (value == null || value === '') {
+      return { month: '', day: '', time: '', weekday: '' };
+    }
+    const d = value instanceof Date ? value : new Date(value);
+    if (Number.isNaN(d.getTime())) {
+      return { month: '', day: '', time: '', weekday: '' };
+    }
+    const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    return {
+      month: SHORT_MONTHS[d.getMonth()].toUpperCase(),
+      day: String(d.getDate()),
+      time: `${pad2(d.getHours())}:${pad2(d.getMinutes())}`,
+      weekday: weekdays[d.getDay()],
+    };
+  }
   
   module.exports = {
     fromDatetimeLocal,
@@ -73,4 +92,5 @@ function fromDatetimeLocal(value) {
     daysAgoStart,
     ymd,
     pad2,
+    eventDateParts,
   };

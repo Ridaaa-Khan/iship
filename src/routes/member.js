@@ -271,7 +271,7 @@ router.get('/registrations/:id/pass.pdf', async (req, res, next) => {
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader(
       'Content-Disposition',
-      `attachment; filename="iship-pass-${pass.registrationId}.pdf"`
+      `attachment; filename="eventra-pass-${pass.registrationId}.pdf"`
     );
     return res.send(pdfBuffer);
   } catch (err) {

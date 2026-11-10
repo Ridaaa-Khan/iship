@@ -1,17 +1,23 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title><%= title %> · iShip</title>
+<title><%= title %> · Eventra</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="/css/main.css" />
 <script src="/js/table-filter.js" defer></script>
 <script src="/js/form-fields.js" defer></script>
+<script src="/js/confirm-action.js" defer></script>
+<script src="/js/events-gallery.js" defer></script>
 </head>
 <body<% if (!currentUser) { %> class="auth-body"<% } %>>
 <% if (typeof currentUser !== 'undefined' && currentUser) { %>
   <header class="topbar">
-    <div class="brand">iShip</div>
     <div class="topbar-right">
-      <span class="role-chip role-<%= String(currentUser.role).toLowerCase() %>"><%= currentUser.role %></span>
       <span class="user-name"><%= currentUser.displayName || currentUser.email %></span>
+      <span class="user-avatar" aria-hidden="true">
+        <%= String(currentUser.displayName || currentUser.email || 'U').trim().charAt(0).toUpperCase() %>
+      </span>
     </div>
   </header>
 <% } %>

@@ -14,7 +14,7 @@
           <a class="btn btn-ghost" href="/member/registrations">Back</a>
         </div>
       <% } else if (order) { %>
-        <div class="form-panel stack">
+        <div class="form-panel form-wide stack">
           <p><strong><%= order.eventTitle %></strong></p>
           <p>Amount: ₹<%= (order.amountPaise / 100).toFixed(2) %></p>
           <button id="payBtn" class="btn btn-primary" type="button">Pay with Razorpay</button>
@@ -33,7 +33,7 @@
               key: '<%= order.keyId %>',
               amount: <%= order.amountPaise %>,
               currency: 'INR',
-              name: 'iShip',
+              name: 'Eventra',
               description: <%- JSON.stringify(order.eventTitle) %>,
               order_id: '<%= order.orderId %>',
               handler: function (response) {

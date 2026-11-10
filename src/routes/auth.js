@@ -68,7 +68,7 @@ router.post('/register', guestOnly, async (req, res, next) => {
 router.post('/logout', requireLogin, (req, res, next) => {
   req.session.destroy((err) => {
     if (err) return next(err);
-    res.clearCookie('iship.sid');
+    res.clearCookie('eventra.sid');
     return res.redirect('/auth/login');
   });
 });

@@ -4,104 +4,170 @@
   <%- include('../partials/head') %>
   <div class="shell">
     <%- include('../partials/sidebar') %>
-    <main class="content event-form-page">
-      <div class="event-form-wrap">
-      <div class="profile-title">
-        <h1>Profile</h1>
-        <button type="button" class="icon-btn" id="editProfile" title="Edit profile" aria-label="Edit profile">✎</button>
+    <main class="content">
+      <%
+        var fullName = String(profile.full_name || '').trim();
+        var email = String(profile.email || '').trim();
+        var phone = String(profile.phone || '').trim();
+        var status = String(profile.status || '—');
+        var memberSince = profile.created_at ? formatDate(profile.created_at) : '';
+        var startEdit = Boolean(error);
+      %>
+
+      <div id="profileView" <%= startEdit ? 'hidden' : '' %>>
+        <div class="page-header">
+          <div>
+            <h1>Profile</h1>
+            <p class="muted">Your account information for this workspace.</p>
+          </div>
+          <button type="button" class="btn btn-primary" id="editProfileBtn">Edit Profile</button>
+        </div>
+
+        <article class="profile-card">
+          <div class="profile-card-head">
+            <h2>Personal information</h2>
+            <p class="muted">Your account details for this workspace.</p>
+          </div>
+
+          <div class="profile-detail-grid">
+            <div class="profile-detail">
+              <span class="profile-detail-label">Full name</span>
+              <strong><%= fullName || '—' %></strong>
+            </div>
+            <div class="profile-detail">
+              <span class="profile-detail-label">Email address</span>
+              <strong><%= email || '—' %></strong>
+            </div>
+            <% if (phone) { %>
+              <div class="profile-detail">
+                <span class="profile-detail-label">Phone number</span>
+                <strong><%= phone %></strong>
+              </div>
+            <% } %>
+            <div class="profile-detail">
+              <span class="profile-detail-label">Membership status</span>
+              <strong>
+                <span class="status-pill <%= status.toLowerCase() %>"><%= status %></span>
+              </strong>
+            </div>
+            <% if (memberSince) { %>
+              <div class="profile-detail">
+                <span class="profile-detail-label">Member since</span>
+                <strong><%= memberSince %></strong>
+              </div>
+            <% } %>
+          </div>
+        </article>
+
+        <form action="/auth/logout" method="POST" class="profile-logout">
+          <button type="submit" class="btn btn-danger">Logout</button>
+        </form>
       </div>
-      <p class="muted">Your membership details. Use the pencil to make changes.</p>
 
-      <% if (error) { %>
-        <div class="alert"><%= error %></div>
-      <% } %>
-
-      <form method="POST" action="/member/profile" class="stack form-panel" id="profileForm">
-        <label>
-          Full name
-          <input
-            type="text"
-            name="fullName"
-            id="fullName"
-            value="<%= profile.full_name || '' %>"
-            minlength="3"
-            maxlength="150"
-            pattern="[A-Za-z]+( [A-Za-z]+)*"
-            title="Use letters only, at least 3 characters"
-            data-validate-name
-            required
-            readonly
-          />
-        </label>
-
-        <label>
-          Email
-          <input type="email" name="email" id="email" value="<%= profile.email || '' %>" maxlength="255" required readonly />
-        </label>
-
-        <div class="form-grid">
-          <label>
-            Phone
-            <input
-              type="tel"
-              name="phone"
-              id="phone"
-              value="<%= profile.phone || '' %>"
-              inputmode="numeric"
-              maxlength="10"
-              pattern="[0-9]{10}"
-              title="Enter exactly 10 digits"
-              data-validate-phone
-              readonly
-            />
-          </label>
-          <label>
-            Membership status
-            <input type="text" value="<%= profile.status || '—' %>" disabled />
-          </label>
+      <div id="profileEdit" <%= startEdit ? '' : 'hidden' %>>
+        <div class="page-header">
+          <div>
+            <h1>Edit profile</h1>
+            <p class="muted">Update your account details.</p>
+          </div>
         </div>
 
-        <label>
-          Member since
-          <input type="text" value="<%= profile.created_at ? formatDate(profile.created_at) : '—' %>" disabled />
-        </label>
+        <% if (error) { %>
+          <div class="alert"><%= error %></div>
+        <% } %>
 
-        <div class="form-actions" id="saveWrap" hidden>
-          <button class="btn btn-primary" type="submit" id="saveBtn" disabled>Save changes</button>
-        </div>
-      </form>
+        <article class="profile-card">
+          <div class="profile-card-head">
+            <h2>Personal information</h2>
+            <p class="muted">Update your personal details below.</p>
+          </div>
 
-      <form action="/auth/logout" method="POST" class="profile-logout">
-        <button type="submit" class="btn btn-danger">Logout</button>
-      </form>
+          <form method="POST" action="/member/profile" class="profile-edit-form" id="profileForm">
+            <div class="form-grid">
+              <label>
+                Full name
+                <input
+                  type="text"
+                  name="fullName"
+                  id="fullName"
+                  value="<%= fullName %>"
+                  minlength="3"
+                  maxlength="150"
+                  pattern="[A-Za-z]+( [A-Za-z]+)*"
+                  title="Use letters only, at least 3 characters"
+                  data-validate-name
+                  required
+                />
+              </label>
+              <label>
+                Email address
+                <input type="email" name="email" id="email" value="<%= email %>" maxlength="255" required />
+              </label>
+            </div>
+
+            <div class="form-grid">
+              <label>
+                Phone number
+                <input
+                  type="tel"
+                  name="phone"
+                  id="phone"
+                  value="<%= phone %>"
+                  inputmode="numeric"
+                  maxlength="10"
+                  pattern="[0-9]{10}"
+                  title="Enter exactly 10 digits"
+                  placeholder="Enter phone number"
+                  data-validate-phone
+                />
+              </label>
+              <label>
+                Membership status
+                <input type="text" value="<%= status %>" disabled />
+              </label>
+            </div>
+
+            <label>
+              Member since
+              <input type="text" value="<%= memberSince || '—' %>" disabled />
+            </label>
+
+            <div class="form-actions profile-edit-actions">
+              <button class="btn btn-ghost" type="button" id="backProfileBtn">Back</button>
+              <button class="btn btn-primary" type="submit" id="saveBtn">Save changes</button>
+            </div>
+          </form>
+        </article>
       </div>
     </main>
   </div>
   <script>
-    const form = document.getElementById('profileForm');
-    const editBtn = document.getElementById('editProfile');
-    const saveWrap = document.getElementById('saveWrap');
-    const saveBtn = document.getElementById('saveBtn');
-    const fields = ['fullName', 'email', 'phone'].map((id) => document.getElementById(id));
-    const original = fields.map((field) => field.value);
+    (function () {
+      var view = document.getElementById('profileView');
+      var edit = document.getElementById('profileEdit');
+      var form = document.getElementById('profileForm');
+      var editBtn = document.getElementById('editProfileBtn');
+      var backBtn = document.getElementById('backProfileBtn');
+      var fields = ['fullName', 'email', 'phone'].map(function (id) {
+        return document.getElementById(id);
+      });
+      var original = fields.map(function (field) { return field.value; });
 
-    function isDirty() {
-      return fields.some((field, index) => field.value !== original[index]);
-    }
+      function showEdit(on) {
+        view.hidden = on;
+        edit.hidden = !on;
+        if (!on) {
+          fields.forEach(function (field, index) {
+            field.value = original[index];
+          });
+        } else {
+          fields[0].focus();
+        }
+      }
 
-    function refreshSave() {
-      const dirty = isDirty();
-      saveWrap.hidden = !dirty;
-      saveBtn.disabled = !dirty || !form.checkValidity();
-    }
-
-    editBtn.addEventListener('click', () => {
-      fields.forEach((field) => { field.readOnly = false; });
-      fields[0].focus();
-      refreshSave();
-    });
-
-    form.addEventListener('input', refreshSave);
+      editBtn.addEventListener('click', function () { showEdit(true); });
+      backBtn.addEventListener('click', function () { showEdit(false); });
+    })();
   </script>
 </body>
 </html>

@@ -7,7 +7,7 @@ const emailService = require('./email');
 
 
 const REASONS = {
-  INVALID_FORMAT: 'This QR is not a valid iShip pass.',
+  INVALID_FORMAT: 'This QR is not a valid Eventra pass.',
   NOT_FOUND: 'Pass not found.',
   BAD_SECRET: 'Pass is forged or damaged.',
   ALREADY_USED: 'This pass was already used.',

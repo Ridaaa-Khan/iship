@@ -14,6 +14,7 @@ const dashboardService = require('../services/dashboard');
 const scannerService = require('../services/scanners');
 const adminMembersService = require('../services/adminMembers');
 const { scannerFormSchema } = require('../validators/scanner.validators');
+const { uploadEventCover, deleteCoverFile } = require('../middleware/eventCover');
 
 const router = express.Router();
 
@@ -71,17 +72,22 @@ router.get('/events/new', (req, res) => {
       capacity: 100,
       priceRupees: '0.00',
       status: 'DRAFT',
+      cover_image: null,
     },
     error: null,
   });
 });
 
-router.post('/events', validate(eventFormSchema), async (req, res, next) => {
+router.post('/events', uploadEventCover, validate(eventFormSchema), async (req, res, next) => {
   try {
-    await eventService.createEvent(req.body, req.session.user.id);
+    if (req.coverUploadError) {
+      throw new AppError(400, 'INVALID_IMAGE', req.coverUploadError);
+    }
+    await eventService.createEvent(req.body, req.session.user.id, req.file);
     return res.redirect('/admin/events');
   } catch (err) {
     if (err instanceof AppError) {
+      if (req.file && req.file.filename) deleteCoverFile(req.file.filename);
       return res.status(err.statusCode).render('admin/event-form', {
         title: 'Create event',
         mode: 'create',
@@ -107,16 +113,20 @@ router.get('/events/:id/edit', async (req, res, next) => {
   }
 });
 
-router.post('/events/:id', validate(eventFormSchema), async (req, res, next) => {
+router.post('/events/:id', uploadEventCover, validate(eventFormSchema), async (req, res, next) => {
   try {
-    await eventService.updateEvent(req.params.id, req.body);
+    if (req.coverUploadError) {
+      throw new AppError(400, 'INVALID_IMAGE', req.coverUploadError);
+    }
+    await eventService.updateEvent(req.params.id, req.body, req.file);
     return res.redirect('/admin/events');
   } catch (err) {
     if (err instanceof AppError) {
+      if (req.file && req.file.filename) deleteCoverFile(req.file.filename);
       return res.status(err.statusCode).render('admin/event-form', {
         title: 'Edit event',
         mode: 'edit',
-        event: { ...req.body, id: req.params.id },
+        event: { ...req.body, id: req.params.id, cover_image: req.body.existingCover || '' },
         error: err.message,
       });
     }
@@ -212,7 +222,7 @@ router.get('/attendance/:eventId/pdf', async (req, res, next) => {
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader(
       'Content-Disposition',
-      `attachment; filename="iship-attendance-${event.id}.pdf"`
+      `attachment; filename="eventra-attendance-${event.id}.pdf"`
     );
     return res.send(pdfBuffer);
   } catch (err) {

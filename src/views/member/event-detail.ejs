@@ -35,6 +35,11 @@
       <% } %>
 
       <article class="event-detail-card">
+        <div class="event-detail-cover<%= eventCoverUrl(event.cover_image) ? '' : ' is-empty' %>">
+          <% if (eventCoverUrl(event.cover_image)) { %>
+            <img src="<%= eventCoverUrl(event.cover_image) %>" alt="" />
+          <% } %>
+        </div>
         <header class="event-detail-head">
           <div class="event-detail-title-row">
             <span class="event-icon event-icon-lg event-icon-<%= tone %>" aria-hidden="true">

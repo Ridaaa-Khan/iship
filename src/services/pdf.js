@@ -170,7 +170,7 @@ function buildPassPdf(pass) {
 
     doc.moveDown(1.4);
     doc.font('Helvetica').fontSize(9).fillColor('#9ca3af')
-      .text('Thank you for being part of iShip.', left, doc.y, {
+      .text('Thank you for being part of Eventra.', left, doc.y, {
         width: contentW,
         align: 'center',
       });

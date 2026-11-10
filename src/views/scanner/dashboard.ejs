@@ -68,31 +68,21 @@
         <% if (!dashboard.recent.length) { %>
           <p class="muted">No scans yet.</p>
         <% } else { %>
-          <div class="table-wrap" style="margin-bottom:0;">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>Member</th>
-                  <th>Time</th>
-                  <th>Result</th>
-                  <th>Details</th>
-                </tr>
-              </thead>
-              <tbody>
-                <% dashboard.recent.forEach((row) => { %>
-                  <tr>
-                    <td><%= row.full_name || '—' %></td>
-                    <td><%= formatDate(row.created_at) %></td>
-                    <td>
-                      <span class="<%= row.result === 'ALLOWED' ? 'result-valid' : 'result-bad' %>">
-                        <%= row.result === 'ALLOWED' ? '✓' : '✕' %> <%= row.resultLabel %>
-                      </span>
-                    </td>
-                    <td><%= row.device_label || row.event_title || '—' %></td>
-                  </tr>
-                <% }) %>
-              </tbody>
-            </table>
+          <div class="activity-list">
+            <% dashboard.recent.slice(0, 5).forEach((row) => { %>
+              <div class="activity-row">
+                <div class="activity-main">
+                  <span class="activity-icon <%= row.result === 'ALLOWED' ? '' : 'is-bad' %>" aria-hidden="true">
+                    <%= row.result === 'ALLOWED' ? '✓' : '✕' %>
+                  </span>
+                  <div>
+                    <strong><%= row.full_name || '—' %></strong>
+                    <div class="muted"><%= row.resultLabel %> · <%= row.device_label || row.event_title || '—' %></div>
+                  </div>
+                </div>
+                <div class="muted"><%= formatDate(row.created_at) %></div>
+              </div>
+            <% }) %>
           </div>
         <% } %>
       </section>

@@ -4,16 +4,20 @@
   <%- include('../partials/head') %>
   <div class="shell">
     <%- include('../partials/sidebar') %>
-    <main class="content event-form-page">
-      <div class="event-form-wrap">
-        <h1>Add a scanner</h1>
-        <p class="muted">This account can open the scanner app and check people in.</p>
+    <main class="content">
+      <div class="page-header">
+        <div>
+          <h1>Add a scanner</h1>
+          <p class="muted">This account can open the scanner app and check people in.</p>
+        </div>
+      </div>
 
-        <% if (error) { %>
-          <div class="alert"><%= error %></div>
-        <% } %>
+      <% if (error) { %>
+        <div class="alert"><%= error %></div>
+      <% } %>
 
-        <form method="POST" action="/admin/scanners" class="stack form-panel">
+      <form method="POST" action="/admin/scanners" class="form-panel form-wide">
+        <div class="form-grid">
           <label>
             Email
             <input type="email" name="email" value="<%= form.email || '' %>" required maxlength="255" autocomplete="off" />
@@ -22,6 +26,8 @@
             Password
             <input type="password" name="password" required minlength="3" maxlength="72" autocomplete="new-password" />
           </label>
+        </div>
+        <div class="form-grid">
           <label>
             Scanner name
             <input type="text" name="scannerName" value="<%= form.scannerName || '' %>" required minlength="2" maxlength="150" />
@@ -30,12 +36,12 @@
             Gate number (optional)
             <input type="text" name="gateNumber" value="<%= form.gateNumber || '' %>" maxlength="50" />
           </label>
-          <div class="form-actions">
-            <button class="btn btn-primary" type="submit">Save scanner</button>
-            <a class="btn btn-ghost" href="/admin/scanners">Back</a>
-          </div>
-        </form>
-      </div>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-primary" type="submit">Save scanner</button>
+          <a class="btn btn-ghost" href="/admin/scanners">Back</a>
+        </div>
+      </form>
     </main>
   </div>
 </body>

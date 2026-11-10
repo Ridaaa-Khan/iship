@@ -1,7 +1,7 @@
 const env = require('./env');
 
 const sessionConfig = {
-  name: 'iship.sid',
+  name: 'eventra.sid',
   secret: env.sessionSecret,
   resave: false,
   saveUninitialized: false,
