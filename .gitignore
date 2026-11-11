@@ -23,3 +23,10 @@ Thumbs.db
 
 # Coverage
 coverage/
+
+# SSL certificates
+certs/iship_full_backup.sql
+/certs/
+
+/iship_full_backup.sql
+/certs/

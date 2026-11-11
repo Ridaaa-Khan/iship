@@ -20,6 +20,7 @@ const env = {
     user: required('DB_USER'),
     password: process.env.DB_PASSWORD || '',
     database: required('DB_NAME'),
+    ssl: process.env.DB_SSL === 'true',
   },
   sessionSecret: required('SESSION_SECRET'),
   razorpay: {

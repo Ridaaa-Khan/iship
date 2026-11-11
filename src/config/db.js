@@ -9,8 +9,13 @@ const pool = mysql.createPool({
   user: env.db.user,
   password: env.db.password,
   database: env.db.database,
+
+  ssl: env.db.ssl
+    ? { minVersion: 'TLSv1.2' }
+    : undefined,
+
   waitForConnections: true,
-  connectionLimit: 10,
+  connectionLimit: 5,
   namedPlaceholders: true,
 });
 
