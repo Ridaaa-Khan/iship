@@ -87,7 +87,7 @@ router.post('/events', uploadEventCover, validate(eventFormSchema), async (req, 
     return res.redirect('/admin/events');
   } catch (err) {
     if (err instanceof AppError) {
-      if (req.file && req.file.filename) deleteCoverFile(req.file.filename);
+      if (req.file && req.file.filename) deleteCoverFile(req.file.public_id);
       return res.status(err.statusCode).render('admin/event-form', {
         title: 'Create event',
         mode: 'create',
@@ -122,7 +122,7 @@ router.post('/events/:id', uploadEventCover, validate(eventFormSchema), async (r
     return res.redirect('/admin/events');
   } catch (err) {
     if (err instanceof AppError) {
-      if (req.file && req.file.filename) deleteCoverFile(req.file.filename);
+      if (req.file && req.file.filename) deleteCoverFile(req.file.public_id);
       return res.status(err.statusCode).render('admin/event-form', {
         title: 'Edit event',
         mode: 'edit',

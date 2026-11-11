@@ -1,34 +1,24 @@
-const fs = require('fs');
-const path = require('path');
-const crypto = require('crypto');
+
 const multer = require('multer');
+const cloudinary = require('../config/cloudinary');
 const AppError = require('../utils/AppError');
 const { logError } = require('../utils/logger');
 
-const uploadDir = path.join(__dirname, '..', '..', 'uploads', 'events');
-
-function ensureUploadDir() {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
-
-const storage = multer.diskStorage({
-  destination(_req, _file, cb) {
-    ensureUploadDir();
-    cb(null, uploadDir);
-  },
-  filename(_req, file, cb) {
-    const ext = path.extname(file.originalname || '').toLowerCase();
-    const safeExt = ['.jpg', '.jpeg', '.png', '.webp', '.gif'].includes(ext) ? ext : '.jpg';
-    cb(null, `${Date.now()}-${crypto.randomBytes(6).toString('hex')}${safeExt}`);
-  },
-});
+const storage = multer.memoryStorage();
 
 function fileFilter(_req, file, cb) {
   const allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+
   if (!allowed.includes(file.mimetype)) {
-    cb(new AppError(400, 'INVALID_IMAGE', 'Please upload a JPG, PNG, WEBP, or GIF image.'));
-    return;
+    return cb(
+      new AppError(
+        400,
+        'INVALID_IMAGE',
+        'Please upload a JPG, PNG, WEBP, or GIF image.'
+      )
+    );
   }
+
   cb(null, true);
 }
 
@@ -38,31 +28,73 @@ const upload = multer({
   limits: { fileSize: 3 * 1024 * 1024 },
 });
 
+function uploadToCloudinary(buffer) {
+  return new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      {
+        folder: 'iship/event-covers',
+        resource_type: 'image',
+      },
+      (error, result) => {
+        if (error) return reject(error);
+        resolve(result);
+      }
+    );
+
+    stream.end(buffer);
+  });
+}
+
 function uploadEventCover(req, res, next) {
-  upload.single('coverImage')(req, res, (err) => {
-    if (!err) return next();
-    if (err instanceof multer.MulterError && err.code === 'LIMIT_FILE_SIZE') {
-      req.coverUploadError = 'Image must be 3MB or smaller.';
+  upload.single('coverImage')(req, res, async (err) => {
+    if (err) {
+      if (err instanceof multer.MulterError && err.code === 'LIMIT_FILE_SIZE') {
+        req.coverUploadError = 'Image must be 3MB or smaller.';
+      } else {
+        req.coverUploadError = err.message || 'Could not upload that image.';
+      }
       return next();
     }
-    req.coverUploadError = err.message || 'Could not upload that image.';
-    return next();
-  });
-}
 
-function deleteCoverFile(filename) {
-  if (!filename) return;
-  const fullPath = path.join(uploadDir, path.basename(filename));
-  fs.unlink(fullPath, (err) => {
-    if (err && err.code !== 'ENOENT') {
-      logError('Could not delete event cover', err.message);
+    if (!req.file) return next();
+
+    try {
+      const result = await uploadToCloudinary(req.file.buffer);
+
+      req.file.filename = result.secure_url;
+      req.file.public_id = result.public_id;
+
+      next();
+    } catch (uploadError) {
+      logError('Cloudinary upload failed', uploadError.message);
+      req.coverUploadError = 'Could not upload image. Please try again.';
+      next();
     }
   });
 }
 
-function coverUrl(filename) {
-  if (!filename) return null;
-  return `/uploads/events/${path.basename(filename)}`;
+function deleteCoverFile(publicId) {
+  if (!publicId) return;
+
+  cloudinary.uploader.destroy(publicId, { resource_type: 'image' })
+    .catch((err) => {
+      logError('Could not delete Cloudinary event cover', err.message);
+    });
+}
+
+function coverUrl(image) {
+  if (!image) return null;
+
+  if (/^https?:\/\//i.test(image)) {
+    return image;
+  }
+
+  // Support legacy images that are still stored locally.
+  return `/uploads/events/${encodeURIComponent(image)}`;
+}
+
+function ensureUploadDir() {
+  // No local upload directory is needed with Cloudinary.
 }
 
 module.exports = {

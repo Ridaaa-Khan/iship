@@ -1,3 +1,4 @@
+
 const AppError = require('../utils/AppError');
 const eventsDb = require('../db/events');
 const { fromDatetimeLocal } = require('../utils/datetime');
@@ -52,10 +53,18 @@ async function getEvent(id) {
 
 async function createEvent(body, adminUserId, file) {
   const payload = toDbPayload(body, adminUserId);
-  payload.coverImage = file && file.filename ? file.filename : null;
-  const id = await eventsDb.createEvent(payload);
-  log('Event created', id);
-  return getEvent(id);
+
+  payload.coverImage = file ? file.filename : null;
+  payload.coverImagePublicId = file ? file.public_id : null;
+
+  try {
+    const id = await eventsDb.createEvent(payload);
+    log('Event created', id);
+    return getEvent(id);
+  } catch (err) {
+    if (file && file.public_id) deleteCoverFile(file.public_id);
+    throw err;
+  }
 }
 
 async function updateEvent(id, body, file) {
@@ -64,16 +73,27 @@ async function updateEvent(id, body, file) {
   delete payload.createdBy;
 
   let coverImage = existing.cover_image || null;
-  if (file && file.filename) {
-    deleteCoverFile(existing.cover_image);
+  let coverImagePublicId = existing.cover_image_public_id || null;
+
+  if (file) {
     coverImage = file.filename;
+    coverImagePublicId = file.public_id;
   } else if (wantsCoverRemoved(body)) {
-    deleteCoverFile(existing.cover_image);
     coverImage = null;
+    coverImagePublicId = null;
   }
+
   payload.coverImage = coverImage;
+  payload.coverImagePublicId = coverImagePublicId;
 
   await eventsDb.updateEvent(id, payload);
+
+  if (file && existing.cover_image_public_id) {
+    deleteCoverFile(existing.cover_image_public_id);
+  } else if (wantsCoverRemoved(body) && existing.cover_image_public_id) {
+    deleteCoverFile(existing.cover_image_public_id);
+  }
+
   log('Event updated', id);
   return getEvent(id);
 }
