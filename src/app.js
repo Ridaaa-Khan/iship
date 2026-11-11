@@ -45,8 +45,17 @@ app.use(async (req, res, next) => {
     res.locals.formatDate = formatDisplay;
     res.locals.toDatetimeLocal = toDatetimeLocal;
     res.locals.eventDateParts = eventDateParts;
-    res.locals.eventCoverUrl = (filename) =>
-      filename ? `/uploads/events/${String(filename).replace(/^.*[\\/]/, '')}` : null;
+    res.locals.eventCoverUrl = (image) => {
+  if (!image) return null;
+
+  // Cloudinary images are already complete URLs.
+  if (/^https?:\/\//i.test(image)) return image;
+
+  // Support legacy local image filenames.
+  return `/uploads/events/${encodeURIComponent(
+    String(image).replace(/^.*[\\/]/, '')
+  )}`;
+};
     next();
   } catch (err) {
     next(err);
